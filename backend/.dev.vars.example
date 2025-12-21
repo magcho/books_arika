@@ -1,0 +1,5 @@
+# Copy this file to .dev.vars and fill in your actual values
+# .dev.vars is gitignored and used for local development
+
+GOOGLE_BOOKS_API_KEY=your_google_books_api_key_here
+

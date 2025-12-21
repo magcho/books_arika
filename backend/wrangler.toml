@@ -1,0 +1,16 @@
+name = "books-arika-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# D1 Database binding
+# Note: Replace with actual database_id after running: wrangler d1 create books-arika-db
+[[d1_databases]]
+binding = "DB"
+database_name = "books-arika-db"
+database_id = "your-database-id-here"
+
+# Environment variables
+[vars]
+# GOOGLE_BOOKS_API_KEY will be set via .dev.vars for local development
+# For production, set via Cloudflare Dashboard or wrangler secret
+
