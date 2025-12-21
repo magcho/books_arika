@@ -1,0 +1,695 @@
+openapi: 3.0.3
+info:
+  title: Books Arika API
+  description: 書籍管理プロダクト MVP API仕様
+  version: 1.0.0
+servers:
+  - url: https://books-arika.pages.dev/api
+    description: Production server
+  - url: http://localhost:8787/api
+    description: Local development server
+
+paths:
+  # Books endpoints
+  /books:
+    get:
+      summary: 書籍一覧取得
+      description: 登録済みのすべての書籍を取得（ユーザー別にフィルタリング）
+      tags:
+        - Books
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 検索キーワード（タイトルまたは著者名）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  books:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookWithLocations'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: 書籍登録
+      description: 新しい書籍を登録する（キーワード検索、バーコード、手動登録すべてに対応）
+      tags:
+        - Books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreateRequest'
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 重複登録（既に同じISBNが存在）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /books/{isbn}:
+    get:
+      summary: 書籍詳細取得
+      description: 指定されたISBNの書籍詳細を取得
+      tags:
+        - Books
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 書籍ISBN
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookWithLocations'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      summary: 書籍更新
+      description: 書籍情報を更新
+      tags:
+        - Books
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookUpdateRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: 書籍削除
+      description: 書籍を削除（所有情報も連鎖削除）
+      tags:
+        - Books
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Search endpoints
+  /search/books:
+    get:
+      summary: 外部API検索
+      description: Google Books APIを使用して書籍を検索
+      tags:
+        - Search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 検索クエリ（タイトルまたは著者名）
+        - name: maxResults
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 40
+          description: 最大結果数
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookSearchResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /search/barcode:
+    post:
+      summary: バーコード検索
+      description: ISBNバーコードから書籍情報を取得
+      tags:
+        - Search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isbn
+              properties:
+                isbn:
+                  type: string
+                  description: スキャンされたISBN
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookSearchResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: 書籍が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Locations endpoints
+  /locations:
+    get:
+      summary: 場所一覧取得
+      description: ユーザーの場所マスタ一覧を取得
+      tags:
+        - Locations
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Location'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: 場所作成
+      description: 新しい場所マスタを作成
+      tags:
+        - Locations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationCreateRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 重複（同じユーザー内で同じ名前の場所が既に存在）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /locations/{location_id}:
+    get:
+      summary: 場所詳細取得
+      description: 指定された場所の詳細を取得
+      tags:
+        - Locations
+      parameters:
+        - name: location_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      summary: 場所更新
+      description: 場所情報を更新
+      tags:
+        - Locations
+      parameters:
+        - name: location_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdateRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: 場所削除
+      description: 場所を削除（所有情報も連鎖削除）
+      tags:
+        - Locations
+      parameters:
+        - name: location_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Ownerships endpoints
+  /ownerships:
+    get:
+      summary: 所有情報一覧取得
+      description: ユーザーの所有情報一覧を取得
+      tags:
+        - Ownerships
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: isbn
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 書籍ISBNでフィルタリング
+        - name: location_id
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: 場所IDでフィルタリング
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ownerships:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ownership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: 所有情報作成
+      description: 書籍と場所の紐付けを作成
+      tags:
+        - Ownerships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnershipCreateRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ownership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: 重複（同じユーザーが同じ書籍を同じ場所に既に所有）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /ownerships/{ownership_id}:
+    delete:
+      summary: 所有情報削除
+      description: 所有情報を削除（書籍と場所の紐付けを解除）
+      tags:
+        - Ownerships
+      parameters:
+        - name: ownership_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Book:
+      type: object
+      required:
+        - title
+      properties:
+        isbn:
+          type: string
+          description: ISBN（NULL許可、同人誌対応）
+          nullable: true
+        title:
+          type: string
+          description: タイトル
+          maxLength: 500
+        author:
+          type: string
+          description: 著者名
+          nullable: true
+          maxLength: 255
+        thumbnail_url:
+          type: string
+          format: uri
+          description: 書影URL
+          nullable: true
+        is_doujin:
+          type: boolean
+          description: 同人誌フラグ
+          default: false
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BookWithLocations:
+      allOf:
+        - $ref: '#/components/schemas/Book'
+        - type: object
+          properties:
+            locations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Location'
+
+    BookCreateRequest:
+      type: object
+      required:
+        - user_id
+        - title
+      properties:
+        user_id:
+          type: string
+          description: ユーザーID（所有情報の追跡に必要）
+        isbn:
+          type: string
+          nullable: true
+        title:
+          type: string
+          maxLength: 500
+        author:
+          type: string
+          maxLength: 255
+        thumbnail_url:
+          type: string
+          format: uri
+        is_doujin:
+          type: boolean
+          default: false
+        location_ids:
+          type: array
+          items:
+            type: integer
+          description: 紐付ける場所IDのリスト
+
+    BookUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 500
+        author:
+          type: string
+          maxLength: 255
+        thumbnail_url:
+          type: string
+          format: uri
+        is_doujin:
+          type: boolean
+
+    BookSearchResult:
+      type: object
+      properties:
+        isbn:
+          type: string
+          nullable: true
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          nullable: true
+
+    Location:
+      type: object
+      required:
+        - id
+        - user_id
+        - name
+        - type
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: string
+        name:
+          type: string
+          maxLength: 100
+          description: "場所名（例: 自宅本棚、Kindle）"
+        type:
+          type: string
+          enum:
+            - Physical
+            - Digital
+          description: 形式（物理/デジタル）
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    LocationCreateRequest:
+      type: object
+      required:
+        - user_id
+        - name
+        - type
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          enum:
+            - Physical
+            - Digital
+
+    LocationUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          enum:
+            - Physical
+            - Digital
+
+    Ownership:
+      type: object
+      required:
+        - id
+        - user_id
+        - isbn
+        - location_id
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: string
+        isbn:
+          type: string
+        location_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    OwnershipCreateRequest:
+      type: object
+      required:
+        - user_id
+        - isbn
+        - location_id
+      properties:
+        user_id:
+          type: string
+        isbn:
+          type: string
+        location_id:
+          type: integer
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: リクエストが不正
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
