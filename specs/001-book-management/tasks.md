@@ -1,16 +1,17 @@
 # Tasks: 書籍管理プロダクト MVP
 
-**Input**: Design documents from `/specs/001-book-management/`
-**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
+**Input**: Design documents from `/specs/001-book-management/`  
+**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/  
+**Feature Name**: 書籍管理プロダクト MVP
 
 **Tests**: Tests are NOT included in this task list as they were not explicitly requested in the feature specification.
 
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Organization**: Tasks are organized by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Story]**: Which user story this task belongs to (e.g., [US1], [US2], [US3])
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -293,14 +294,14 @@ With multiple developers:
 - **Total Tasks**: 84 tasks
 - **Setup Phase**: 12 tasks (T001-T012)
 - **Foundational Phase**: 13 tasks (T013-T025)
-- **User Story 1 (P1)**: 14 tasks (T026-T039)
+- **User Story 1 (P1)**: 14 tasks (T026-T039) - ✅ **COMPLETED**
 - **User Story 2 (P2)**: 19 tasks (T040-T058)
 - **User Story 3 (P3)**: 12 tasks (T059-T070)
 - **Polish Phase**: 14 tasks (T071-T084)
 
 ### Task Count per User Story
 
-- **User Story 1**: 14 tasks
+- **User Story 1**: 14 tasks (✅ All completed)
 - **User Story 2**: 19 tasks
 - **User Story 3**: 12 tasks
 
@@ -308,19 +309,19 @@ With multiple developers:
 
 - **Setup Phase**: 8 parallel tasks (T005-T012)
 - **Foundational Phase**: 8 parallel tasks (T018-T025)
-- **User Story 1**: Backend and frontend can be developed in parallel after API contracts
+- **User Story 1**: Backend and frontend can be developed in parallel after API contracts (✅ Completed)
 - **User Story 2**: Location and Ownership models can be created in parallel (T040-T041)
 - **User Story 3**: Can be developed in parallel with other stories after Foundational phase
 
 ### Independent Test Criteria
 
-- **User Story 1**: ユーザーが1冊の書籍を登録し、登録された書籍が一覧に表示されることを確認できる
+- **User Story 1**: ユーザーが1冊の書籍を登録し、登録された書籍が一覧に表示されることを確認できる ✅
 - **User Story 2**: ユーザーが場所マスタを作成し、登録済み書籍にその場所を紐付けることができる。1つの書籍に複数の場所を紐付け、すべての場所が正しく表示されることを確認できる
 - **User Story 3**: ユーザーが登録済み書籍の一覧を表示し、タイトルや著者名で検索できる。検索結果が即座に表示され、該当書籍の所有場所が確認できる
 
 ### Suggested MVP Scope
 
-- **MVP**: User Story 1 only (書籍の登録)
+- **MVP**: User Story 1 only (書籍の登録) ✅ **COMPLETED**
 - This delivers the core value: users can register books via keyword search, barcode scan, or manual entry
 - User Stories 2 and 3 can be added incrementally after MVP validation
 
@@ -330,5 +331,5 @@ All tasks follow the strict checklist format:
 - ✅ Checkbox: `- [ ]`
 - ✅ Task ID: Sequential (T001, T002, ...)
 - ✅ [P] marker: Included where tasks can run in parallel
-- ✅ [Story] label: Included for user story phase tasks (US1, US2, US3)
+- ✅ [Story] label: Included for user story phase tasks ([US1], [US2], [US3])
 - ✅ File paths: Exact paths included in descriptions
