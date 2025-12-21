@@ -25,9 +25,23 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// API routes - mount routes
-app.route('/api/books', booksRoutes)
-app.route('/api/search', searchRoutes)
+// API routes - define directly instead of using app.route()
+// This is a workaround for Cloudflare Workers environment
+app.post('/api/books', async (c) => {
+  return booksRoutes.fetch(c.req.raw, c.env, c.executionCtx)
+})
+
+app.get('/api/books', async (c) => {
+  return booksRoutes.fetch(c.req.raw, c.env, c.executionCtx)
+})
+
+app.get('/api/search/books', async (c) => {
+  return searchRoutes.fetch(c.req.raw, c.env, c.executionCtx)
+})
+
+app.post('/api/search/barcode', async (c) => {
+  return searchRoutes.fetch(c.req.raw, c.env, c.executionCtx)
+})
 // app.route('/api/locations', locationsRoutes)
 // app.route('/api/ownerships', ownershipsRoutes)
 
