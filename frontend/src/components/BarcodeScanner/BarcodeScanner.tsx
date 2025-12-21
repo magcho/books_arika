@@ -1,6 +1,12 @@
 /**
  * Barcode Scanner Component
  * Camera-based ISBN barcode scanning using browser APIs
+ * 
+ * TODO: Implement actual barcode scanning functionality
+ * - Option 1: Use html5-qrcode library (supports ISBN barcodes)
+ * - Option 2: Use @zxing/library for barcode scanning
+ * - Current implementation only provides camera access UI
+ * - Manual ISBN input is available as fallback
  */
 
 import { useState, useRef, useEffect } from 'react'

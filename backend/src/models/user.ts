@@ -22,6 +22,8 @@ export interface UserUpdateInput {
 
 /**
  * Default user ID for MVP phase
+ * Can be overridden via environment variable DEFAULT_USER_ID
+ * TODO: Replace with actual authentication in Phase 3 (multi-user support)
  */
 export const DEFAULT_USER_ID = 'default-user'
 

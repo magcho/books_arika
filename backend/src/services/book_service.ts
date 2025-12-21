@@ -18,35 +18,48 @@ export class BookService {
     // Generate ISBN/UUID if not provided
     const isbn = input.isbn || generateBookId()
 
-    // Check for duplicate ISBN
+    // Check for duplicate ISBN (optimistic check)
     const existing = await this.findByISBN(isbn)
     if (existing) {
       throw new Error(`Book with ISBN ${isbn} already exists`)
     }
 
-    // Insert book
-    await this.db
-      .prepare(
-        `INSERT INTO books (isbn, title, author, thumbnail_url, is_doujin, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
-      )
-      .bind(
-        isbn,
-        input.title,
-        input.author || null,
-        input.thumbnail_url || null,
-        input.is_doujin ? 1 : 0
-      )
-      .run()
+    try {
+      // Insert book - database UNIQUE constraint will catch race conditions
+      await this.db
+        .prepare(
+          `INSERT INTO books (isbn, title, author, thumbnail_url, is_doujin, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+        )
+        .bind(
+          isbn,
+          input.title,
+          input.author || null,
+          input.thumbnail_url || null,
+          input.is_doujin ? 1 : 0
+        )
+        .run()
 
-    // Fetch the created book
-    const result = await this.findByISBN(isbn)
+      // Fetch the created book
+      const result = await this.findByISBN(isbn)
 
-    if (!result) {
-      throw new Error('Failed to create book')
+      if (!result) {
+        throw new Error('Failed to create book')
+      }
+
+      return result
+    } catch (error) {
+      // Handle database UNIQUE constraint violation
+      if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+        // Race condition: another request created the book between check and insert
+        const existing = await this.findByISBN(isbn)
+        if (existing) {
+          throw new Error(`Book with ISBN ${isbn} already exists`)
+        }
+        throw error
+      }
+      throw error
     }
-
-    return result
   }
 
   /**

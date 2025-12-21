@@ -13,18 +13,21 @@ export interface ValidationError {
 
 /**
  * Validate required fields in request body
+ * @param data - Request body data (can be any object with string keys)
+ * @param fields - Array of required field names
  */
-export function validateRequired(
-  data: Record<string, unknown>,
-  fields: string[]
+export function validateRequired<T extends Record<string, unknown>>(
+  data: T,
+  fields: (keyof T)[]
 ): ValidationError[] {
   const errors: ValidationError[] = []
 
   for (const field of fields) {
-    if (data[field] === undefined || data[field] === null || data[field] === '') {
+    const value = data[field]
+    if (value === undefined || value === null || value === '') {
       errors.push({
-        field,
-        message: `${field} is required`,
+        field: String(field),
+        message: `${String(field)} is required`,
       })
     }
   }

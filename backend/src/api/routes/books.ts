@@ -9,6 +9,7 @@ import type { Env } from '../../types/db'
 import { BookService } from '../../services/book_service'
 import { validateRequired, validateLength, throwValidationError } from '../middleware/validation'
 import type { BookCreateRequest } from '../../types'
+import { isValidISBN } from '../../models/book'
 
 const books = new Hono<{ Bindings: Env }>()
 
@@ -38,6 +39,16 @@ books.post('/', async (c) => {
     }
   }
 
+  // ISBN validation if provided
+  if (body.isbn && !isValidISBN(body.isbn)) {
+    throwValidationError([
+      {
+        field: 'isbn',
+        message: 'ISBN形式が正しくありません',
+      },
+    ])
+  }
+
   const bookService = new BookService(db)
 
   // Check for duplicates
@@ -53,7 +64,7 @@ books.post('/', async (c) => {
     throw new HTTPException(409, {
       message: JSON.stringify({
         error: {
-          message: 'Book already exists',
+          message: 'この書籍は既に登録されています',
           code: 'DUPLICATE_BOOK',
           details: { existing_isbn: duplicate.isbn },
         },
@@ -75,10 +86,21 @@ books.post('/', async (c) => {
     if (error instanceof HTTPException) {
       throw error
     }
+    // Handle database unique constraint violation
+    if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+      throw new HTTPException(409, {
+        message: JSON.stringify({
+          error: {
+            message: 'この書籍は既に登録されています',
+            code: 'DUPLICATE_BOOK',
+          },
+        }),
+      })
+    }
     throw new HTTPException(500, {
       message: JSON.stringify({
         error: {
-          message: 'Failed to create book',
+          message: '書籍の登録に失敗しました',
           code: 'CREATE_BOOK_ERROR',
         },
       }),
@@ -101,7 +123,7 @@ books.get('/', async (c) => {
     throw new HTTPException(500, {
       message: JSON.stringify({
         error: {
-          message: 'Failed to retrieve books',
+          message: '書籍一覧の取得に失敗しました',
           code: 'LIST_BOOKS_ERROR',
         },
       }),

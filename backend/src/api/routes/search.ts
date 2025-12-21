@@ -20,11 +20,11 @@ search.get('/books', async (c) => {
   const query = c.req.query('q')
   const maxResults = parseInt(c.req.query('maxResults') || '10', 10)
 
-  if (!query) {
+    if (!query) {
     throwValidationError([
       {
         field: 'q',
-        message: 'Query parameter is required',
+        message: '検索キーワードは必須です',
       },
     ])
   }
@@ -41,7 +41,7 @@ search.get('/books', async (c) => {
       message: JSON.stringify({
         error: {
           message:
-            error instanceof Error ? error.message : 'Failed to search books',
+            error instanceof Error ? error.message : '書籍検索に失敗しました',
           code: 'GOOGLE_BOOKS_API_ERROR',
         },
       }),
@@ -72,7 +72,7 @@ search.post('/barcode', async (c) => {
       throw new HTTPException(404, {
         message: JSON.stringify({
           error: {
-            message: 'Book not found',
+            message: '書籍が見つかりませんでした',
             code: 'BOOK_NOT_FOUND',
           },
         }),
@@ -88,7 +88,7 @@ search.post('/barcode', async (c) => {
       message: JSON.stringify({
         error: {
           message:
-            error instanceof Error ? error.message : 'Failed to search by barcode',
+            error instanceof Error ? error.message : 'バーコード検索に失敗しました',
           code: 'BARCODE_SEARCH_ERROR',
         },
       }),
