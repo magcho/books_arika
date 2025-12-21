@@ -1,6 +1,10 @@
 /**
  * Book test fixtures
  * Mock book data for frontend tests
+ * 
+ * Note: Backend tests use separate fixtures in backend/tests/fixtures/books.ts
+ * due to different type definitions (BookCreateInput vs BookCreateRequest).
+ * The core Book type is shared, but API request types differ between backend and frontend.
  */
 
 import type { Book, BookSearchResult, BookCreateRequest } from '../../src/types'

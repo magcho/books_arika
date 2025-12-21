@@ -8,6 +8,7 @@ on:
 jobs:
   test-backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,7 +27,8 @@ jobs:
         run: cd backend && npm ci
 
       - name: Run Backend Tests
-        run: cd backend && npm test -- --coverage
+        run: cd backend && npm test -- --run --coverage
+        timeout-minutes: 1
         env:
           GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY || 'dummy-api-key' }}
 
@@ -37,9 +39,11 @@ jobs:
           flags: backend
           name: backend-coverage
         continue-on-error: true
+        if: always()
 
   test-frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,7 +59,8 @@ jobs:
         run: cd frontend && npm ci
 
       - name: Run Frontend Tests
-        run: cd frontend && npm test -- --coverage
+        run: cd frontend && npm test -- --run --coverage
+        timeout-minutes: 1
 
       - name: Upload Coverage Reports
         uses: codecov/codecov-action@v3
@@ -64,4 +69,5 @@ jobs:
           flags: frontend
           name: frontend-coverage
         continue-on-error: true
+        if: always()
 
