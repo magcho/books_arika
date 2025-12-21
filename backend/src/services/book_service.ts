@@ -25,11 +25,10 @@ export class BookService {
     }
 
     // Insert book
-    const result = await this.db
+    await this.db
       .prepare(
         `INSERT INTO books (isbn, title, author, thumbnail_url, is_doujin, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-         RETURNING *`
+         VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       )
       .bind(
         isbn,
@@ -38,16 +37,16 @@ export class BookService {
         input.thumbnail_url || null,
         input.is_doujin ? 1 : 0
       )
-      .first<Book>()
+      .run()
+
+    // Fetch the created book
+    const result = await this.findByISBN(isbn)
 
     if (!result) {
       throw new Error('Failed to create book')
     }
 
-    return {
-      ...result,
-      is_doujin: Boolean(result.is_doujin),
-    }
+    return result
   }
 
   /**
