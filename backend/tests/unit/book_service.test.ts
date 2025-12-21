@@ -14,7 +14,7 @@ describe('BookService', () => {
 
   beforeEach(async () => {
     // Get D1 database from test environment
-    db = await getTestDatabase()
+    db = getTestDatabase()
     await setupTestDatabase(db)
     bookService = new BookService(db)
   })

@@ -11,7 +11,7 @@ describe('POST /api/books', () => {
   let db: D1Database
 
   beforeEach(async () => {
-    db = await getTestDatabase()
+    db = getTestDatabase()
     await setupTestDatabase(db)
   })
 
@@ -108,7 +108,7 @@ describe('GET /api/books', () => {
   let db: D1Database
 
   beforeEach(async () => {
-    db = await getTestDatabase()
+    db = getTestDatabase()
     await setupTestDatabase(db)
   })
 

@@ -11,7 +11,7 @@ describe('GET /api/search/books', () => {
   let db: D1Database
 
   beforeEach(async () => {
-    db = await getTestDatabase()
+    db = getTestDatabase()
     await setupTestDatabase(db)
     // Mock global fetch for Google Books API
     global.fetch = vi.fn()
@@ -92,7 +92,7 @@ describe('POST /api/search/barcode', () => {
   let db: D1Database
 
   beforeEach(async () => {
-    db = await getTestDatabase()
+    db = getTestDatabase()
     await setupTestDatabase(db)
     // Mock global fetch for Google Books API
     global.fetch = vi.fn()
