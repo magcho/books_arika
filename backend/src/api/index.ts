@@ -26,8 +26,8 @@ app.get('/health', (c) => {
 })
 
 // API routes
-app.route('/api', booksRoutes)
-app.route('/api', searchRoutes)
+app.route('/api/books', booksRoutes)
+app.route('/api/search', searchRoutes)
 // app.route('/api/locations', locationsRoutes)
 // app.route('/api/ownerships', ownershipsRoutes)
 
