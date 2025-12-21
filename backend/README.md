@@ -42,6 +42,29 @@ npm run dev
 
 The API will be available at `http://localhost:8787`
 
+## Testing
+
+Run tests:
+```bash
+npm test
+```
+
+Run tests with coverage:
+```bash
+npm test -- --coverage
+```
+
+Test coverage reports are generated in `coverage/` directory.
+
+### Test Structure
+
+- `tests/unit/` - Unit tests for services and models
+- `tests/integration/` - Integration tests for API endpoints
+- `tests/helpers/` - Test helper functions
+- `tests/fixtures/` - Test data fixtures
+
+See `tests/README.md` for detailed testing documentation.
+
 ## Endpoints
 
 - `GET /health` - Health check endpoint
