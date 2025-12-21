@@ -16,7 +16,7 @@ const books = new Hono<{ Bindings: Env }>()
  * POST /api/books
  * Register a new book
  */
-books.post('/books', async (c) => {
+books.post('/', async (c) => {
   const db = c.env.DB
   const body = await c.req.json<BookCreateRequest>()
 
@@ -90,7 +90,7 @@ books.post('/books', async (c) => {
  * GET /api/books
  * List all books (for MVP, returns all books)
  */
-books.get('/books', async (c) => {
+books.get('/', async (c) => {
   const db = c.env.DB
   const bookService = new BookService(db)
 
