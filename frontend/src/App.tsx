@@ -1,24 +1,67 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BookRegisterPage } from './pages/BookRegisterPage'
 
 function App() {
-  const [status, setStatus] = useState<string>('Checking...')
-
-  const checkHealth = async () => {
-    try {
-      const response = await fetch('http://localhost:8787/health')
-      const data = await response.json()
-      setStatus(`Backend is healthy: ${JSON.stringify(data)}`)
-    } catch (error) {
-      setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }
-
   return (
-    <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
-      <h1>Books Arika - Frontend</h1>
-      <p>Status: {status}</p>
-      <button onClick={checkHealth}>Check Backend Health</button>
-    </div>
+    <BrowserRouter>
+      <div style={{ fontFamily: 'system-ui', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+        <nav
+          style={{
+            backgroundColor: '#fff',
+            padding: '1rem',
+            borderBottom: '1px solid #ddd',
+            marginBottom: '1rem',
+          }}
+        >
+          <Link
+            to="/"
+            style={{
+              textDecoration: 'none',
+              color: '#007bff',
+              fontWeight: 'bold',
+              fontSize: '1.2rem',
+            }}
+          >
+            Books Arika
+          </Link>
+          <Link
+            to="/register"
+            style={{
+              textDecoration: 'none',
+              color: '#007bff',
+              marginLeft: '1rem',
+            }}
+          >
+            書籍登録
+          </Link>
+        </nav>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+                <h1>Books Arika</h1>
+                <p>書籍管理システムへようこそ</p>
+                <Link
+                  to="/register"
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                  }}
+                >
+                  書籍を登録する
+                </Link>
+              </div>
+            }
+          />
+          <Route path="/register" element={<BookRegisterPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
 
