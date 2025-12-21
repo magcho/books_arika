@@ -4,10 +4,12 @@ compatibility_date = "2024-01-01"
 
 # D1 Database binding
 # Note: Replace with actual database_id after running: wrangler d1 create books-arika-db
+# For local development, use --local flag: wrangler dev --local
+# Local development uses a dummy ID - replace with real ID for production
 [[d1_databases]]
 binding = "DB"
 database_name = "books-arika-db"
-database_id = "your-database-id-here"
+database_id = "00000000-0000-0000-0000-000000000000"  # Dummy ID for local dev
 
 # Environment variables
 [vars]
