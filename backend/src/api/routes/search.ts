@@ -16,7 +16,7 @@ const search = new Hono<{ Bindings: Env }>()
  * GET /api/search/books
  * Search books using Google Books API
  */
-search.get('/books', async (c) => {
+search.get('/search/books', async (c) => {
   const query = c.req.query('q')
   const maxResults = parseInt(c.req.query('maxResults') || '10', 10)
 
@@ -53,7 +53,7 @@ search.get('/books', async (c) => {
  * POST /api/search/barcode
  * Search book by ISBN barcode
  */
-search.post('/barcode', async (c) => {
+search.post('/search/barcode', async (c) => {
   const body = await c.req.json<{ isbn: string }>()
 
   // Validation
