@@ -1,16 +1,17 @@
 # Tasks: 書籍管理プロダクト MVP
 
-**Input**: Design documents from `/specs/001-book-management/`
-**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
+**Input**: Design documents from `/specs/001-book-management/`  
+**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/  
+**Feature Name**: 書籍管理プロダクト MVP
 
 **Tests**: Tests are NOT included in this task list as they were not explicitly requested in the feature specification.
 
-**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
+**Organization**: Tasks are organized by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Story]**: Which user story this task belongs to (e.g., [US1], [US2], [US3])
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -23,18 +24,18 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [x] T001 Create backend project structure (backend/src/models/, backend/src/services/, backend/src/api/routes/, backend/src/api/middleware/, backend/src/types/)
-- [x] T002 Create frontend project structure (frontend/src/components/, frontend/src/pages/, frontend/src/services/, frontend/src/types/)
-- [x] T003 Initialize backend project with Hono 4+ and TypeScript dependencies in backend/package.json
-- [x] T004 Initialize frontend project with React 18+, Vite 5+, React Router, and TypeScript dependencies in frontend/package.json
-- [x] T005 [P] Create backend/tsconfig.json with Cloudflare Workers types configuration
-- [x] T006 [P] Create frontend/tsconfig.json with React and Vite configuration
-- [x] T007 [P] Create backend/wrangler.toml with D1 database binding configuration
-- [x] T008 [P] Create frontend/vite.config.ts with build configuration
-- [x] T009 [P] Configure linting and formatting tools (ESLint, Prettier) for backend
-- [x] T010 [P] Configure linting and formatting tools (ESLint, Prettier) for frontend
-- [x] T011 Create backend/.dev.vars template file for environment variables
-- [x] T012 Create frontend/.env template file for API URL configuration
+- [ ] T001 Create backend project structure (backend/src/models/, backend/src/services/, backend/src/api/routes/, backend/src/api/middleware/, backend/src/types/)
+- [ ] T002 Create frontend project structure (frontend/src/components/, frontend/src/pages/, frontend/src/services/, frontend/src/types/)
+- [ ] T003 Initialize backend project with Hono 4+ and TypeScript dependencies in backend/package.json
+- [ ] T004 Initialize frontend project with React 18+, Vite 5+, React Router, and TypeScript dependencies in frontend/package.json
+- [ ] T005 [P] Create backend/tsconfig.json with Cloudflare Workers types configuration
+- [ ] T006 [P] Create frontend/tsconfig.json with React and Vite configuration
+- [ ] T007 [P] Create backend/wrangler.toml with D1 database binding configuration
+- [ ] T008 [P] Create frontend/vite.config.ts with build configuration
+- [ ] T009 [P] Configure linting and formatting tools (ESLint, Prettier) for backend
+- [ ] T010 [P] Configure linting and formatting tools (ESLint, Prettier) for frontend
+- [ ] T011 Create backend/.dev.vars template file for environment variables
+- [ ] T012 Create frontend/.env template file for API URL configuration
 
 ---
 
@@ -44,19 +45,19 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T013 Create database schema file backend/schema.sql based on data-model.md
-- [x] T014 Setup D1 database migration workflow and apply initial schema
-- [x] T015 Create base User model in backend/src/models/user.ts (for MVP: default user support)
-- [x] T016 Create base Book model in backend/src/models/book.ts (with ISBN handling for NULL case)
-- [x] T017 Setup Hono API routing structure in backend/src/api/index.ts
-- [x] T018 [P] Create error handling middleware in backend/src/api/middleware/error.ts
-- [x] T019 [P] Create CORS middleware in backend/src/api/middleware/cors.ts
-- [x] T020 [P] Create request validation utilities in backend/src/api/middleware/validation.ts
-- [x] T021 Create database connection utility in backend/src/types/db.ts (D1 binding types)
-- [x] T022 Setup environment configuration management in backend/src/config/env.ts
-- [x] T023 Create base API client service in frontend/src/services/api.ts
-- [x] T024 Create TypeScript type definitions in frontend/src/types/index.ts (Book, Location, Ownership types)
-- [x] T025 Create TypeScript type definitions in backend/src/types/index.ts (matching frontend types)
+- [ ] T013 Create database schema file backend/schema.sql based on data-model.md
+- [ ] T014 Setup D1 database migration workflow and apply initial schema
+- [ ] T015 Create base User model in backend/src/models/user.ts (for MVP: default user support)
+- [ ] T016 Create base Book model in backend/src/models/book.ts (with ISBN handling for NULL case)
+- [ ] T017 Setup Hono API routing structure in backend/src/api/index.ts
+- [ ] T018 [P] Create error handling middleware in backend/src/api/middleware/error.ts
+- [ ] T019 [P] Create CORS middleware in backend/src/api/middleware/cors.ts
+- [ ] T020 [P] Create request validation utilities in backend/src/api/middleware/validation.ts
+- [ ] T021 Create database connection utility in backend/src/types/db.ts (D1 binding types)
+- [ ] T022 Setup environment configuration management in backend/src/config/env.ts
+- [ ] T023 Create base API client service in frontend/src/services/api.ts
+- [ ] T024 Create TypeScript type definitions in frontend/src/types/index.ts (Book, Location, Ownership types)
+- [ ] T025 Create TypeScript type definitions in backend/src/types/index.ts (matching frontend types)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -70,20 +71,20 @@
 
 ### Implementation for User Story 1
 
-- [ ] T026 [US1] Update Book model in backend/src/models/book.ts to handle ISBN NULL case (UUID generation for non-ISBN books)
-- [ ] T027 [US1] Create BookService in backend/src/services/book_service.ts with create, find, duplicate detection methods
-- [ ] T028 [US1] Create GoogleBooksService in backend/src/services/google_books_service.ts for external API integration
-- [ ] T029 [US1] Implement POST /api/books endpoint in backend/src/api/routes/books.ts (book registration)
-- [ ] T030 [US1] Implement GET /api/search/books endpoint in backend/src/api/routes/search.ts (Google Books API search)
-- [ ] T031 [US1] Implement POST /api/search/barcode endpoint in backend/src/api/routes/search.ts (ISBN barcode lookup)
-- [ ] T032 [US1] Add input validation for book registration requests in backend/src/api/middleware/validation.ts
-- [ ] T033 [US1] Add error handling for Google Books API failures and timeouts in backend/src/services/google_books_service.ts
-- [ ] T034 [US1] Create BookForm component in frontend/src/components/BookForm/BookForm.tsx (keyword search, barcode scan, manual entry)
-- [ ] T035 [US1] Create BarcodeScanner component in frontend/src/components/BarcodeScanner/BarcodeScanner.tsx (camera-based ISBN scanning)
-- [ ] T036 [US1] Create BookRegisterPage in frontend/src/pages/BookRegisterPage.tsx (main registration UI)
-- [ ] T037 [US1] Create book API service in frontend/src/services/book_api.ts (POST /api/books, GET /api/search/books, POST /api/search/barcode)
-- [ ] T038 [US1] Add duplicate detection UI feedback in frontend/src/components/BookForm/BookForm.tsx
-- [ ] T039 [US1] Add error handling and fallback to manual entry in frontend/src/components/BookForm/BookForm.tsx
+- [x] T026 [US1] Update Book model in backend/src/models/book.ts to handle ISBN NULL case (UUID generation for non-ISBN books)
+- [x] T027 [US1] Create BookService in backend/src/services/book_service.ts with create, find, duplicate detection methods
+- [x] T028 [US1] Create GoogleBooksService in backend/src/services/google_books_service.ts for external API integration
+- [x] T029 [US1] Implement POST /api/books endpoint in backend/src/api/routes/books.ts (book registration)
+- [x] T030 [US1] Implement GET /api/search/books endpoint in backend/src/api/routes/search.ts (Google Books API search)
+- [x] T031 [US1] Implement POST /api/search/barcode endpoint in backend/src/api/routes/search.ts (ISBN barcode lookup)
+- [x] T032 [US1] Add input validation for book registration requests in backend/src/api/middleware/validation.ts
+- [x] T033 [US1] Add error handling for Google Books API failures and timeouts in backend/src/services/google_books_service.ts
+- [x] T034 [US1] Create BookForm component in frontend/src/components/BookForm/BookForm.tsx (keyword search, barcode scan, manual entry)
+- [x] T035 [US1] Create BarcodeScanner component in frontend/src/components/BarcodeScanner/BarcodeScanner.tsx (camera-based ISBN scanning)
+- [x] T036 [US1] Create BookRegisterPage in frontend/src/pages/BookRegisterPage.tsx (main registration UI)
+- [x] T037 [US1] Create book API service in frontend/src/services/book_api.ts (POST /api/books, GET /api/search/books, POST /api/search/barcode)
+- [x] T038 [US1] Add duplicate detection UI feedback in frontend/src/components/BookForm/BookForm.tsx
+- [x] T039 [US1] Add error handling and fallback to manual entry in frontend/src/components/BookForm/BookForm.tsx
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Users can register books via keyword search, barcode scan, or manual entry.
 
@@ -293,14 +294,14 @@ With multiple developers:
 - **Total Tasks**: 84 tasks
 - **Setup Phase**: 12 tasks (T001-T012)
 - **Foundational Phase**: 13 tasks (T013-T025)
-- **User Story 1 (P1)**: 14 tasks (T026-T039)
+- **User Story 1 (P1)**: 14 tasks (T026-T039) - ✅ **COMPLETED**
 - **User Story 2 (P2)**: 19 tasks (T040-T058)
 - **User Story 3 (P3)**: 12 tasks (T059-T070)
 - **Polish Phase**: 14 tasks (T071-T084)
 
 ### Task Count per User Story
 
-- **User Story 1**: 14 tasks
+- **User Story 1**: 14 tasks (✅ All completed)
 - **User Story 2**: 19 tasks
 - **User Story 3**: 12 tasks
 
@@ -308,19 +309,19 @@ With multiple developers:
 
 - **Setup Phase**: 8 parallel tasks (T005-T012)
 - **Foundational Phase**: 8 parallel tasks (T018-T025)
-- **User Story 1**: Backend and frontend can be developed in parallel after API contracts
+- **User Story 1**: Backend and frontend can be developed in parallel after API contracts (✅ Completed)
 - **User Story 2**: Location and Ownership models can be created in parallel (T040-T041)
 - **User Story 3**: Can be developed in parallel with other stories after Foundational phase
 
 ### Independent Test Criteria
 
-- **User Story 1**: ユーザーが1冊の書籍を登録し、登録された書籍が一覧に表示されることを確認できる
+- **User Story 1**: ユーザーが1冊の書籍を登録し、登録された書籍が一覧に表示されることを確認できる ✅
 - **User Story 2**: ユーザーが場所マスタを作成し、登録済み書籍にその場所を紐付けることができる。1つの書籍に複数の場所を紐付け、すべての場所が正しく表示されることを確認できる
 - **User Story 3**: ユーザーが登録済み書籍の一覧を表示し、タイトルや著者名で検索できる。検索結果が即座に表示され、該当書籍の所有場所が確認できる
 
 ### Suggested MVP Scope
 
-- **MVP**: User Story 1 only (書籍の登録)
+- **MVP**: User Story 1 only (書籍の登録) ✅ **COMPLETED**
 - This delivers the core value: users can register books via keyword search, barcode scan, or manual entry
 - User Stories 2 and 3 can be added incrementally after MVP validation
 
@@ -330,6 +331,5 @@ All tasks follow the strict checklist format:
 - ✅ Checkbox: `- [ ]`
 - ✅ Task ID: Sequential (T001, T002, ...)
 - ✅ [P] marker: Included where tasks can run in parallel
-- ✅ [Story] label: Included for user story phase tasks (US1, US2, US3)
+- ✅ [Story] label: Included for user story phase tasks ([US1], [US2], [US3])
 - ✅ File paths: Exact paths included in descriptions
-

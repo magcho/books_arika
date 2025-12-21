@@ -1,15 +1,15 @@
 <!--
 Sync Impact Report:
-Version change: (none) → 1.0.0
-Modified principles: (none - initial creation)
+Version change: 1.0.0 → 1.1.0
+Modified principles: (none)
 Added sections:
-  - Core Principles (5 principles)
-  - Technology Stack Requirements
-  - Development Workflow
+  - VI. コード品質と保守性
+  - VII. エラーハンドリングとメッセージの一貫性
+  - VIII. バリデーションと型安全性の徹底
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md - Constitution Check section aligns with principles
-  ✅ .specify/templates/spec-template.md - No changes needed
-  ✅ .specify/templates/tasks-template.md - No changes needed
+  ✅ .specify/templates/plan-template.md - Constitution Check section will include new principles
+  ⚠ .specify/templates/spec-template.md - No changes needed (but should reference new principles in review)
+  ⚠ .specify/templates/tasks-template.md - No changes needed (but should reference new principles in review)
 Follow-up TODOs: None
 -->
 
@@ -36,6 +36,18 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 ### V. 軽量・高速起動
 
 すべてのコンポーネントは軽量で高速に起動することを必須とする。バックエンドはHonoのような超軽量フレームワークを使用し、コールドスタート時間を最小化する。フロントエンドはViteによる高速ビルドと開発体験を優先し、本番環境でも最適化されたバンドルサイズを維持する。
+
+### VI. コード品質と保守性 (NON-NEGOTIABLE)
+
+すべてのコードは、重複を避け、保守性を最優先とする。同じロジックやルートハンドラーが複数箇所に存在することを禁止する。定数や設定値は一元管理し、ハードコーディングを避ける。環境変数や設定ファイルを通じて値を注入可能にする。コードレビューでは、重複コードの検出とリファクタリングを必須とする。
+
+### VII. エラーハンドリングとメッセージの一貫性 (NON-NEGOTIABLE)
+
+すべてのエラーメッセージは日本語で統一し、ユーザーに分かりやすい表現を使用する。バックエンドとフロントエンドでエラーメッセージの言語が混在することを禁止する。エラーハンドリングは一貫したパターンに従い、適切なHTTPステータスコードとエラーコードを返す。データベースのUNIQUE制約違反など、競合状態は適切に検出し、ユーザーフレンドリーなメッセージで通知する。
+
+### VIII. バリデーションと型安全性の徹底 (NON-NEGOTIABLE)
+
+すべての入力データは、定義されたバリデーション関数を使用して検証する。バリデーション関数が存在する場合は、それを必ず使用し、未使用のバリデーション関数を残さない。型安全性を損なう非nullアサーション（`!`）の使用を避け、型ガードや条件分岐で適切に型を絞り込む。データベースの制約（UNIQUE、CHECK等）を最大限活用し、アプリケーションレベルとデータベースレベルの両方で整合性を保証する。
 
 ## Technology Stack Requirements
 
@@ -70,10 +82,14 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 
 すべてのプルリクエストは、この憲法の原則に準拠していることを確認するレビューを必須とする。特に以下の点を確認する：
 
-- TypeScriptの型安全性が保たれているか
+- TypeScriptの型安全性が保たれているか（非nullアサーションの不適切な使用がないか）
 - Cloudflareエコシステムを優先的に使用しているか
 - 低コスト・高パフォーマンス・スケーラビリティの観点が考慮されているか
 - エッジファーストのアーキテクチャが維持されているか
+- コードの重複がないか
+- エラーメッセージが日本語で統一されているか
+- バリデーション関数が適切に使用されているか
+- ハードコーディングがなく、定数が一元管理されているか
 
 ### Testing
 
@@ -105,10 +121,10 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 
 ### Compliance Review
 
-すべてのプルリクエストは、この憲法への準拠を確認するレビューを必須とする。複雑性の追加は正当化され、より簡単な代替案が検討されたことを文書化する必要がある。
+すべてのプルリクエストは、この憲法への準拠を確認するレビューを必須とする。複雑性の追加は正当化され、より簡単な代替案が検討されたことを文書化する必要がある。コードレビューでは、新たに追加された原則（VI, VII, VIII）への準拠を特に確認する。
 
 ### Versioning Policy
 
 憲法のバージョンは、セマンティックバージョニング（MAJOR.MINOR.PATCH）に従う。各変更は適切なバージョン番号の更新と共に記録される。
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-21 | **Last Amended**: 2025-12-21
+**Version**: 1.1.0 | **Ratified**: 2025-12-21 | **Last Amended**: 2025-12-22

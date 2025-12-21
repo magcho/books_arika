@@ -13,18 +13,21 @@ export interface ValidationError {
 
 /**
  * Validate required fields in request body
+ * @param data - Request body data (can be any object with string keys)
+ * @param fields - Array of required field names
  */
-export function validateRequired(
-  data: Record<string, unknown>,
-  fields: string[]
+export function validateRequired<T extends Record<string, unknown>>(
+  data: T,
+  fields: (keyof T)[]
 ): ValidationError[] {
   const errors: ValidationError[] = []
 
   for (const field of fields) {
-    if (data[field] === undefined || data[field] === null || data[field] === '') {
+    const value = data[field]
+    if (value === undefined || value === null || value === '') {
       errors.push({
-        field,
-        message: `${field} is required`,
+        field: String(field),
+        message: `${String(field)}は必須です`,
       })
     }
   }
@@ -48,14 +51,14 @@ export function validateLength(
   if (min !== undefined && value.length < min) {
     return {
       field,
-      message: `${field} must be at least ${min} characters`,
+      message: `${field}は${min}文字以上である必要があります`,
     }
   }
 
   if (max !== undefined && value.length > max) {
     return {
       field,
-      message: `${field} must be at most ${max} characters`,
+      message: `${field}は${max}文字以下である必要があります`,
     }
   }
 
@@ -74,7 +77,7 @@ export function validateEmail(email: string | undefined, field: string): Validat
   if (!emailRegex.test(email)) {
     return {
       field,
-      message: `${field} must be a valid email address`,
+      message: `${field}は有効なメールアドレスである必要があります`,
     }
   }
 
@@ -95,7 +98,7 @@ export function validateURL(url: string | undefined, field: string): ValidationE
   } catch {
     return {
       field,
-      message: `${field} must be a valid URL`,
+      message: `${field}は有効なURLである必要があります`,
     }
   }
 }
@@ -107,7 +110,7 @@ export function throwValidationError(errors: ValidationError[]): never {
   throw new HTTPException(400, {
     message: JSON.stringify({
       error: {
-        message: 'Validation failed',
+        message: 'バリデーションエラー',
         code: 'VALIDATION_ERROR',
         details: errors,
       },
