@@ -31,7 +31,15 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+以下の憲法原則への準拠を確認する：
+
+- ✅ **Cloudflareエコシステム優先**: 提案された技術スタックはCloudflareサービスを優先的に使用しているか
+- ✅ **低コスト・高パフォーマンス・スケーラビリティ**: 技術選定が3要素を満たしているか
+- ✅ **TypeScript型安全性**: すべてのコードがTypeScriptで記述され、型安全性が確保されているか
+- ✅ **エッジファーストアーキテクチャ**: アプリケーションロジックがエッジで実行可能な設計か
+- ✅ **軽量・高速起動**: コンポーネントが軽量で高速に起動する設計か
+
+**違反がある場合**: Complexity Tracking セクションで正当化を文書化する必要がある。
 
 ## Project Structure
 
