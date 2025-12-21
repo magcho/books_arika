@@ -8,11 +8,11 @@ import { cors } from './middleware/cors'
 import { errorHandler } from './middleware/error'
 import { logger } from './middleware/logger'
 
-// Import route handlers (will be created in later tasks)
-// import { booksRoutes } from './routes/books'
+// Import route handlers
+import { booksRoutes } from './routes/books'
+import { searchRoutes } from './routes/search'
 // import { locationsRoutes } from './routes/locations'
 // import { ownershipsRoutes } from './routes/ownerships'
-// import { searchRoutes } from './routes/search'
 
 const app = new Hono()
 
@@ -25,11 +25,11 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// API routes (will be added in later phases)
-// app.route('/api/books', booksRoutes)
+// API routes
+app.route('/api/books', booksRoutes)
+app.route('/api/search', searchRoutes)
 // app.route('/api/locations', locationsRoutes)
 // app.route('/api/ownerships', ownershipsRoutes)
-// app.route('/api/search', searchRoutes)
 
 // Error handler must be last
 app.onError(errorHandler)
