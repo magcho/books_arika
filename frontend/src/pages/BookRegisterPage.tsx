@@ -5,8 +5,7 @@
 
 import { useState } from 'react'
 import { BookForm } from '../components/BookForm/BookForm'
-
-const DEFAULT_USER_ID = 'default-user'
+import { DEFAULT_USER_ID } from '../config/constants'
 
 export function BookRegisterPage() {
   const [refreshKey, setRefreshKey] = useState(0)

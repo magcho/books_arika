@@ -18,9 +18,12 @@ const search = new Hono<{ Bindings: Env }>()
  */
 search.get('/books', async (c) => {
   const query = c.req.query('q')
-  const maxResults = parseInt(c.req.query('maxResults') || '10', 10)
+  const maxResultsParam = c.req.query('maxResults')
+  const maxResults = maxResultsParam
+    ? Math.max(1, Math.min(40, parseInt(maxResultsParam, 10) || 10))
+    : 10
 
-    if (!query) {
+  if (!query) {
     throwValidationError([
       {
         field: 'q',
@@ -33,7 +36,7 @@ search.get('/books', async (c) => {
   const googleBooksService = new GoogleBooksService(config.googleBooksApiKey)
 
   try {
-    const results = await googleBooksService.search(query, Math.min(maxResults, 40))
+    const results = await googleBooksService.search(query, maxResults)
     return c.json({ items: results })
   } catch (error) {
     // Return error but allow fallback to manual entry

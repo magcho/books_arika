@@ -107,12 +107,15 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
     setDuplicateInfo(null)
 
     try {
+      // Type guard: selectedBook is guaranteed to be non-null when mode === 'search'
+      const selectedBookData = mode === 'search' && selectedBook ? selectedBook : null
+      
       const bookData: BookCreateRequest = {
         user_id: defaultUserId,
-        title: mode === 'search' ? selectedBook!.title : manualBook.title,
-        author: mode === 'search' ? selectedBook!.author : manualBook.author || undefined,
-        isbn: mode === 'search' ? selectedBook!.isbn : manualBook.isbn || undefined,
-        thumbnail_url: mode === 'search' ? selectedBook!.thumbnail_url : undefined,
+        title: selectedBookData ? selectedBookData.title : manualBook.title,
+        author: selectedBookData ? selectedBookData.author : manualBook.author || undefined,
+        isbn: selectedBookData ? selectedBookData.isbn : manualBook.isbn || undefined,
+        thumbnail_url: selectedBookData ? selectedBookData.thumbnail_url : undefined,
         is_doujin: mode === 'manual' ? manualBook.is_doujin : false,
       }
 

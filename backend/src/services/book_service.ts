@@ -21,7 +21,7 @@ export class BookService {
     // Check for duplicate ISBN (optimistic check)
     const existing = await this.findByISBN(isbn)
     if (existing) {
-      throw new Error(`Book with ISBN ${isbn} already exists`)
+      throw new Error(`ISBN ${isbn} の書籍は既に登録されています`)
     }
 
     try {
@@ -44,7 +44,7 @@ export class BookService {
       const result = await this.findByISBN(isbn)
 
       if (!result) {
-        throw new Error('Failed to create book')
+        throw new Error('書籍の作成に失敗しました')
       }
 
       return result
@@ -54,7 +54,7 @@ export class BookService {
         // Race condition: another request created the book between check and insert
         const existing = await this.findByISBN(isbn)
         if (existing) {
-          throw new Error(`Book with ISBN ${isbn} already exists`)
+          throw new Error(`ISBN ${isbn} の書籍は既に登録されています`)
         }
         throw error
       }
