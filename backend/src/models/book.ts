@@ -5,7 +5,8 @@
  * ISBN can be NULL for doujin books - we use UUID in that case.
  */
 
-import { randomUUID } from 'crypto'
+// Generate UUID for books without ISBN
+// In Cloudflare Workers, we use crypto.randomUUID() which is available globally
 
 export interface Book {
   isbn: string // ISBN or UUID for non-ISBN books
@@ -34,9 +35,11 @@ export interface BookUpdateInput {
 
 /**
  * Generate a UUID for books without ISBN (e.g., doujin books)
+ * Uses Web Crypto API available in Cloudflare Workers
  */
 export function generateBookId(): string {
-  return randomUUID()
+  // crypto.randomUUID() is available in Cloudflare Workers runtime
+  return crypto.randomUUID()
 }
 
 /**

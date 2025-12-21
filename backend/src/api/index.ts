@@ -16,10 +16,9 @@ import { logger } from './middleware/logger'
 
 const app = new Hono()
 
-// Global middleware
+// Global middleware (error handler must be last)
 app.use('*', logger)
 app.use('*', cors)
-app.use('*', errorHandler)
 
 // Health check endpoint
 app.get('/health', (c) => {
@@ -31,6 +30,9 @@ app.get('/health', (c) => {
 // app.route('/api/locations', locationsRoutes)
 // app.route('/api/ownerships', ownershipsRoutes)
 // app.route('/api/search', searchRoutes)
+
+// Error handler must be last
+app.onError(errorHandler)
 
 export default app
 
