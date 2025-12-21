@@ -25,9 +25,9 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// API routes
-app.route('/api/books', booksRoutes)
-app.route('/api/search', searchRoutes)
+// API routes - mount at /api prefix
+app.route('/api', booksRoutes)
+app.route('/api', searchRoutes)
 // app.route('/api/locations', locationsRoutes)
 // app.route('/api/ownerships', ownershipsRoutes)
 
