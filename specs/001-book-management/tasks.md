@@ -23,18 +23,18 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend project structure (backend/src/models/, backend/src/services/, backend/src/api/routes/, backend/src/api/middleware/, backend/src/types/)
-- [ ] T002 Create frontend project structure (frontend/src/components/, frontend/src/pages/, frontend/src/services/, frontend/src/types/)
-- [ ] T003 Initialize backend project with Hono 4+ and TypeScript dependencies in backend/package.json
-- [ ] T004 Initialize frontend project with React 18+, Vite 5+, React Router, and TypeScript dependencies in frontend/package.json
-- [ ] T005 [P] Create backend/tsconfig.json with Cloudflare Workers types configuration
-- [ ] T006 [P] Create frontend/tsconfig.json with React and Vite configuration
-- [ ] T007 [P] Create backend/wrangler.toml with D1 database binding configuration
-- [ ] T008 [P] Create frontend/vite.config.ts with build configuration
-- [ ] T009 [P] Configure linting and formatting tools (ESLint, Prettier) for backend
-- [ ] T010 [P] Configure linting and formatting tools (ESLint, Prettier) for frontend
-- [ ] T011 Create backend/.dev.vars template file for environment variables
-- [ ] T012 Create frontend/.env template file for API URL configuration
+- [x] T001 Create backend project structure (backend/src/models/, backend/src/services/, backend/src/api/routes/, backend/src/api/middleware/, backend/src/types/)
+- [x] T002 Create frontend project structure (frontend/src/components/, frontend/src/pages/, frontend/src/services/, frontend/src/types/)
+- [x] T003 Initialize backend project with Hono 4+ and TypeScript dependencies in backend/package.json
+- [x] T004 Initialize frontend project with React 18+, Vite 5+, React Router, and TypeScript dependencies in frontend/package.json
+- [x] T005 [P] Create backend/tsconfig.json with Cloudflare Workers types configuration
+- [x] T006 [P] Create frontend/tsconfig.json with React and Vite configuration
+- [x] T007 [P] Create backend/wrangler.toml with D1 database binding configuration
+- [x] T008 [P] Create frontend/vite.config.ts with build configuration
+- [x] T009 [P] Configure linting and formatting tools (ESLint, Prettier) for backend
+- [x] T010 [P] Configure linting and formatting tools (ESLint, Prettier) for frontend
+- [x] T011 Create backend/.dev.vars template file for environment variables
+- [x] T012 Create frontend/.env template file for API URL configuration
 
 ---
 
