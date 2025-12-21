@@ -37,7 +37,7 @@ app.post('/api/books', async (c) => {
   const body = await c.req.json<BookCreateRequest>()
 
   // Validation
-  const errors = validateRequired(body, ['user_id', 'title'])
+  const errors = validateRequired(body as Record<string, unknown>, ['user_id', 'title'])
   if (errors.length > 0) {
     throwValidationError(errors)
   }
@@ -159,7 +159,7 @@ app.post('/api/search/barcode', async (c) => {
   const body = await c.req.json<{ isbn: string }>()
 
   // Validation
-  const errors = validateRequired(body, ['isbn'])
+  const errors = validateRequired(body as Record<string, unknown>, ['isbn'])
   if (errors.length > 0) {
     throwValidationError(errors)
   }
