@@ -44,19 +44,19 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T013 Create database schema file backend/schema.sql based on data-model.md
-- [ ] T014 Setup D1 database migration workflow and apply initial schema
-- [ ] T015 Create base User model in backend/src/models/user.ts (for MVP: default user support)
-- [ ] T016 Create base Book model in backend/src/models/book.ts (with ISBN handling for NULL case)
-- [ ] T017 Setup Hono API routing structure in backend/src/api/index.ts
-- [ ] T018 [P] Create error handling middleware in backend/src/api/middleware/error.ts
-- [ ] T019 [P] Create CORS middleware in backend/src/api/middleware/cors.ts
-- [ ] T020 [P] Create request validation utilities in backend/src/api/middleware/validation.ts
-- [ ] T021 Create database connection utility in backend/src/types/db.ts (D1 binding types)
-- [ ] T022 Setup environment configuration management in backend/src/config/env.ts
-- [ ] T023 Create base API client service in frontend/src/services/api.ts
-- [ ] T024 Create TypeScript type definitions in frontend/src/types/index.ts (Book, Location, Ownership types)
-- [ ] T025 Create TypeScript type definitions in backend/src/types/index.ts (matching frontend types)
+- [x] T013 Create database schema file backend/schema.sql based on data-model.md
+- [x] T014 Setup D1 database migration workflow and apply initial schema
+- [x] T015 Create base User model in backend/src/models/user.ts (for MVP: default user support)
+- [x] T016 Create base Book model in backend/src/models/book.ts (with ISBN handling for NULL case)
+- [x] T017 Setup Hono API routing structure in backend/src/api/index.ts
+- [x] T018 [P] Create error handling middleware in backend/src/api/middleware/error.ts
+- [x] T019 [P] Create CORS middleware in backend/src/api/middleware/cors.ts
+- [x] T020 [P] Create request validation utilities in backend/src/api/middleware/validation.ts
+- [x] T021 Create database connection utility in backend/src/types/db.ts (D1 binding types)
+- [x] T022 Setup environment configuration management in backend/src/config/env.ts
+- [x] T023 Create base API client service in frontend/src/services/api.ts
+- [x] T024 Create TypeScript type definitions in frontend/src/types/index.ts (Book, Location, Ownership types)
+- [x] T025 Create TypeScript type definitions in backend/src/types/index.ts (matching frontend types)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
