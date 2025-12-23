@@ -212,7 +212,7 @@ describe('GET /api/locations/:location_id', () => {
     const created = await createResponse.json()
 
     // Get location
-    const request = new Request(`http://localhost/api/locations/${created.id}`, {
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'GET',
     })
 
@@ -223,17 +223,54 @@ describe('GET /api/locations/:location_id', () => {
     expect(location.name).toBe('自宅本棚')
   })
 
-  it('should return 404 when location not found', async () => {
-    const request = new Request('http://localhost/api/locations/999', {
+  it('should return 403 when accessing another user\'s location', async () => {
+    // Create user first
+    await db.prepare('INSERT OR IGNORE INTO users (id, name) VALUES (?, ?)').bind('other-user', 'Other User').run()
+
+    // Create location for other-user
+    const createRequest = new Request('http://localhost/api/locations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: 'other-user',
+        name: 'Other User Location',
+        type: 'Physical',
+      }),
+    })
+    const createResponse = await handleTestRequest(createRequest, db)
+    const created = await createResponse.json()
+
+    // Try to access with different user
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'GET',
     })
 
     const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(403)
+  })
+
+  it('should return 400 when user_id is missing', async () => {
+    const request = new Request('http://localhost/api/locations/1', {
+      method: 'GET',
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+  })
+
+  it('should return 404 when location not found', async () => {
+    // Use a very large location ID that definitely doesn't exist
+    const request = new Request('http://localhost/api/locations/999999?user_id=default-user', {
+      method: 'GET',
+    })
+
+    const response = await handleTestRequest(request, db)
+    // Location doesn't exist, so should return 404 (not 403)
     expect(response.status).toBe(404)
   })
 
   it('should return 400 when location_id is not a number', async () => {
-    const request = new Request('http://localhost/api/locations/invalid', {
+    const request = new Request('http://localhost/api/locations/invalid?user_id=default-user', {
       method: 'GET',
     })
 
@@ -269,7 +306,7 @@ describe('PUT /api/locations/:location_id', () => {
     const created = await createResponse.json()
 
     // Update location
-    const request = new Request(`http://localhost/api/locations/${created.id}`, {
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -282,6 +319,36 @@ describe('PUT /api/locations/:location_id', () => {
     const location = await response.json()
     expect(location.name).toBe('書斎本棚')
     expect(location.type).toBe('Physical') // Type should remain unchanged
+  })
+
+  it('should return 403 when updating another user\'s location', async () => {
+    // Create user first
+    await db.prepare('INSERT OR IGNORE INTO users (id, name) VALUES (?, ?)').bind('other-user', 'Other User').run()
+
+    // Create location for other-user
+    const createRequest = new Request('http://localhost/api/locations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: 'other-user',
+        name: 'Other User Location',
+        type: 'Physical',
+      }),
+    })
+    const createResponse = await handleTestRequest(createRequest, db)
+    const created = await createResponse.json()
+
+    // Try to update with different user
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Hacked Name',
+      }),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(403)
   })
 
   it('should update location type', async () => {
@@ -299,7 +366,7 @@ describe('PUT /api/locations/:location_id', () => {
     const created = await createResponse.json()
 
     // Update location
-    const request = new Request(`http://localhost/api/locations/${created.id}`, {
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -329,7 +396,7 @@ describe('PUT /api/locations/:location_id', () => {
     const created = await createResponse.json()
 
     // Update location
-    const request = new Request(`http://localhost/api/locations/${created.id}`, {
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -345,8 +412,21 @@ describe('PUT /api/locations/:location_id', () => {
     expect(location.type).toBe('Digital')
   })
 
+  it('should return 400 when user_id is missing', async () => {
+    const request = new Request('http://localhost/api/locations/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'New Name',
+      }),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+  })
+
   it('should return 404 when location not found', async () => {
-    const request = new Request('http://localhost/api/locations/999', {
+    const request = new Request('http://localhost/api/locations/999?user_id=default-user', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -385,7 +465,7 @@ describe('PUT /api/locations/:location_id', () => {
     const location2 = await createResponse2.json()
 
     // Try to update location2 to have the same name as location1
-    const request = new Request(`http://localhost/api/locations/${location2.id}`, {
+    const request = new Request(`http://localhost/api/locations/${location2.id}?user_id=default-user`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -425,7 +505,7 @@ describe('DELETE /api/locations/:location_id', () => {
     const created = await createResponse.json()
 
     // Delete location
-    const request = new Request(`http://localhost/api/locations/${created.id}`, {
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'DELETE',
     })
 
@@ -433,15 +513,50 @@ describe('DELETE /api/locations/:location_id', () => {
     expect(response.status).toBe(204)
 
     // Verify location is deleted
-    const getRequest = new Request(`http://localhost/api/locations/${created.id}`, {
+    const getRequest = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
       method: 'GET',
     })
     const getResponse = await handleTestRequest(getRequest, db)
     expect(getResponse.status).toBe(404)
   })
 
+  it('should return 403 when deleting another user\'s location', async () => {
+    // Create user first
+    await db.prepare('INSERT OR IGNORE INTO users (id, name) VALUES (?, ?)').bind('other-user', 'Other User').run()
+
+    // Create location for other-user
+    const createRequest = new Request('http://localhost/api/locations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: 'other-user',
+        name: 'Other User Location',
+        type: 'Physical',
+      }),
+    })
+    const createResponse = await handleTestRequest(createRequest, db)
+    const created = await createResponse.json()
+
+    // Try to delete with different user
+    const request = new Request(`http://localhost/api/locations/${created.id}?user_id=default-user`, {
+      method: 'DELETE',
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(403)
+  })
+
+  it('should return 400 when user_id is missing', async () => {
+    const request = new Request('http://localhost/api/locations/1', {
+      method: 'DELETE',
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+  })
+
   it('should return 404 when location not found', async () => {
-    const request = new Request('http://localhost/api/locations/999', {
+    const request = new Request('http://localhost/api/locations/999?user_id=default-user', {
       method: 'DELETE',
     })
 
@@ -450,7 +565,7 @@ describe('DELETE /api/locations/:location_id', () => {
   })
 
   it('should return 400 when location_id is not a number', async () => {
-    const request = new Request('http://localhost/api/locations/invalid', {
+    const request = new Request('http://localhost/api/locations/invalid?user_id=default-user', {
       method: 'DELETE',
     })
 

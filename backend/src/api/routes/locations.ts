@@ -9,6 +9,16 @@ import type { Env } from '../../types/db'
 import { LocationService } from '../../services/location_service'
 import { validateRequired, validateLength, throwValidationError } from '../middleware/validation'
 import type { LocationCreateRequest, LocationUpdateRequest } from '../../types'
+import { isValidLocationType } from '../../models/location'
+
+/**
+ * Custom error codes for location operations
+ */
+const ERROR_CODES = {
+  DUPLICATE_LOCATION: 'DUPLICATE_LOCATION',
+  LOCATION_NOT_FOUND: 'LOCATION_NOT_FOUND',
+  LOCATION_OWNERSHIP_ERROR: 'LOCATION_OWNERSHIP_ERROR',
+} as const
 
 const locations = new Hono<{ Bindings: Env }>()
 
@@ -65,7 +75,7 @@ locations.post('/', async (c) => {
     throwValidationError([nameError])
   }
 
-  if (body.type !== 'Physical' && body.type !== 'Digital') {
+  if (!isValidLocationType(body.type)) {
     throwValidationError([
       {
         field: 'type',
@@ -88,13 +98,13 @@ locations.post('/', async (c) => {
     if (error instanceof HTTPException) {
       throw error
     }
-    // Handle duplicate location name
+    // Handle duplicate location name - check for specific error message pattern
     if (error instanceof Error && error.message.includes('既に登録されています')) {
       throw new HTTPException(409, {
         message: JSON.stringify({
           error: {
             message: error.message,
-            code: 'DUPLICATE_LOCATION',
+            code: ERROR_CODES.DUPLICATE_LOCATION,
           },
         }),
       })
@@ -113,16 +123,27 @@ locations.post('/', async (c) => {
 /**
  * GET /api/locations/:location_id
  * Get location by ID
+ * Validates that the location belongs to the requesting user
  */
 locations.get('/:location_id', async (c) => {
   const db = c.env.DB
   const location_id = parseInt(c.req.param('location_id'), 10)
+  const user_id = c.req.query('user_id')
 
   if (isNaN(location_id)) {
     throwValidationError([
       {
         field: 'location_id',
         message: '場所IDは数値である必要があります',
+      },
+    ])
+  }
+
+  if (!user_id) {
+    throwValidationError([
+      {
+        field: 'user_id',
+        message: 'user_idは必須です',
       },
     ])
   }
@@ -137,7 +158,21 @@ locations.get('/:location_id', async (c) => {
         message: JSON.stringify({
           error: {
             message: '場所が見つかりません',
-            code: 'LOCATION_NOT_FOUND',
+            code: ERROR_CODES.LOCATION_NOT_FOUND,
+          },
+        }),
+      })
+    }
+
+    // Security: Validate that location belongs to user
+    // Check ownership only if location exists
+    const locationOwned = await locationService.validateLocationOwnership(location_id, user_id)
+    if (!locationOwned) {
+      throw new HTTPException(403, {
+        message: JSON.stringify({
+          error: {
+            message: 'この場所にアクセスする権限がありません',
+            code: ERROR_CODES.LOCATION_OWNERSHIP_ERROR,
           },
         }),
       })
@@ -162,17 +197,28 @@ locations.get('/:location_id', async (c) => {
 /**
  * PUT /api/locations/:location_id
  * Update location
+ * Validates that the location belongs to the requesting user
  */
 locations.put('/:location_id', async (c) => {
   const db = c.env.DB
   const location_id = parseInt(c.req.param('location_id'), 10)
   const body = await c.req.json<LocationUpdateRequest>()
+  const user_id = c.req.query('user_id')
 
   if (isNaN(location_id)) {
     throwValidationError([
       {
         field: 'location_id',
         message: '場所IDは数値である必要があります',
+      },
+    ])
+  }
+
+  if (!user_id) {
+    throwValidationError([
+      {
+        field: 'user_id',
+        message: 'user_idは必須です',
       },
     ])
   }
@@ -184,7 +230,7 @@ locations.put('/:location_id', async (c) => {
     }
   }
 
-  if (body.type !== undefined && body.type !== 'Physical' && body.type !== 'Digital') {
+  if (body.type !== undefined && !isValidLocationType(body.type)) {
     throwValidationError([
       {
         field: 'type',
@@ -196,6 +242,32 @@ locations.put('/:location_id', async (c) => {
   const locationService = new LocationService(db)
 
   try {
+    // Check if location exists first
+    const existing = await locationService.findById(location_id)
+    if (!existing) {
+      throw new HTTPException(404, {
+        message: JSON.stringify({
+          error: {
+            message: '場所が見つかりません',
+            code: ERROR_CODES.LOCATION_NOT_FOUND,
+          },
+        }),
+      })
+    }
+
+    // Security: Validate that location belongs to user before updating
+    const locationOwned = await locationService.validateLocationOwnership(location_id, user_id)
+    if (!locationOwned) {
+      throw new HTTPException(403, {
+        message: JSON.stringify({
+          error: {
+            message: 'この場所を更新する権限がありません',
+            code: ERROR_CODES.LOCATION_OWNERSHIP_ERROR,
+          },
+        }),
+      })
+    }
+
     const location = await locationService.update(location_id, {
       name: body.name,
       type: body.type,
@@ -212,7 +284,7 @@ locations.put('/:location_id', async (c) => {
         message: JSON.stringify({
           error: {
             message: error.message,
-            code: 'DUPLICATE_LOCATION',
+            code: ERROR_CODES.DUPLICATE_LOCATION,
           },
         }),
       })
@@ -223,7 +295,7 @@ locations.put('/:location_id', async (c) => {
         message: JSON.stringify({
           error: {
             message: error.message,
-            code: 'LOCATION_NOT_FOUND',
+            code: ERROR_CODES.LOCATION_NOT_FOUND,
           },
         }),
       })
@@ -242,10 +314,12 @@ locations.put('/:location_id', async (c) => {
 /**
  * DELETE /api/locations/:location_id
  * Delete location
+ * Validates that the location belongs to the requesting user
  */
 locations.delete('/:location_id', async (c) => {
   const db = c.env.DB
   const location_id = parseInt(c.req.param('location_id'), 10)
+  const user_id = c.req.query('user_id')
 
   if (isNaN(location_id)) {
     throwValidationError([
@@ -256,9 +330,44 @@ locations.delete('/:location_id', async (c) => {
     ])
   }
 
+  if (!user_id) {
+    throwValidationError([
+      {
+        field: 'user_id',
+        message: 'user_idは必須です',
+      },
+    ])
+  }
+
   const locationService = new LocationService(db)
 
   try {
+    // Check if location exists first
+    const existing = await locationService.findById(location_id)
+    if (!existing) {
+      throw new HTTPException(404, {
+        message: JSON.stringify({
+          error: {
+            message: '場所が見つかりません',
+            code: ERROR_CODES.LOCATION_NOT_FOUND,
+          },
+        }),
+      })
+    }
+
+    // Security: Validate that location belongs to user before deleting
+    const locationOwned = await locationService.validateLocationOwnership(location_id, user_id)
+    if (!locationOwned) {
+      throw new HTTPException(403, {
+        message: JSON.stringify({
+          error: {
+            message: 'この場所を削除する権限がありません',
+            code: ERROR_CODES.LOCATION_OWNERSHIP_ERROR,
+          },
+        }),
+      })
+    }
+
     await locationService.delete(location_id)
     return c.body(null, 204)
   } catch (error) {
@@ -271,7 +380,7 @@ locations.delete('/:location_id', async (c) => {
         message: JSON.stringify({
           error: {
             message: error.message,
-            code: 'LOCATION_NOT_FOUND',
+            code: ERROR_CODES.LOCATION_NOT_FOUND,
           },
         }),
       })
