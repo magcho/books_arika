@@ -7,6 +7,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { Env } from '../../types/db'
 import { BookService } from '../../services/book_service'
+import { OwnershipService } from '../../services/ownership_service'
 import { validateRequired, validateLength, throwValidationError } from '../middleware/validation'
 import type { BookCreateRequest } from '../../types'
 import { isValidISBN } from '../../models/book'
@@ -80,6 +81,45 @@ books.post('/', async (c) => {
       thumbnail_url: body.thumbnail_url || null,
       is_doujin: body.is_doujin || false,
     })
+
+    // Create ownerships if location_ids are provided
+    if (body.location_ids && body.location_ids.length > 0) {
+      const ownershipService = new OwnershipService(db)
+      
+      // Validate that all location_ids belong to the user
+      for (const location_id of body.location_ids) {
+        const locationOwned = await ownershipService.validateLocationOwnership(
+          location_id,
+          body.user_id
+        )
+        if (!locationOwned) {
+          throw new HTTPException(403, {
+            message: JSON.stringify({
+              error: {
+                message: `場所ID ${location_id} はこのユーザーのものではありません`,
+                code: 'LOCATION_OWNERSHIP_ERROR',
+              },
+            }),
+          })
+        }
+      }
+
+      // Create ownerships for each location
+      const ownershipInputs = body.location_ids.map((location_id) => ({
+        user_id: body.user_id,
+        isbn: book.isbn,
+        location_id: location_id,
+      }))
+
+      try {
+        await ownershipService.createMultiple(ownershipInputs)
+      } catch (ownershipError) {
+        // If ownership creation fails, we still return the book
+        // The book was created successfully, ownerships can be added later
+        // Log the error but don't fail the request
+        console.error('所有情報の作成に失敗しました:', ownershipError)
+      }
+    }
 
     return c.json(book, 201)
   } catch (error) {
