@@ -61,15 +61,18 @@ jobs:
         run: cd frontend && npm ci
 
       - name: Run Frontend Tests
-        run: cd frontend && npm test -- --run --coverage
+        run: cd frontend && npm test -- --run
         timeout-minutes: 1
 
-      - name: Upload Coverage Reports
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./frontend/coverage/coverage-final.json
-          flags: frontend
-          name: frontend-coverage
-        continue-on-error: true
-        if: always()
+      # Note: Frontend coverage is disabled in CI/CD due to compatibility issues
+      # with webidl-conversions/whatwg-url packages in GitHub Actions environment.
+      # Coverage can be generated locally.
+      # - name: Upload Coverage Reports
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./frontend/coverage/coverage-final.json
+      #     flags: frontend
+      #     name: frontend-coverage
+      #   continue-on-error: true
+      #   if: always()
 
