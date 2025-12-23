@@ -1,15 +1,14 @@
 <!--
 Sync Impact Report:
-Version change: 1.0.0 → 1.1.0
+Version change: 1.1.0 → 1.2.0
 Modified principles: (none)
 Added sections:
-  - VI. コード品質と保守性
-  - VII. エラーハンドリングとメッセージの一貫性
-  - VIII. バリデーションと型安全性の徹底
+  - IX. 自動テストの実装と品質保証
+  - Testing section expanded with mandatory requirements
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md - Constitution Check section will include new principles
-  ⚠ .specify/templates/spec-template.md - No changes needed (but should reference new principles in review)
-  ⚠ .specify/templates/tasks-template.md - No changes needed (but should reference new principles in review)
+  ✅ .specify/templates/plan-template.md - Constitution Check section will include new principle
+  ✅ .specify/templates/tasks-template.md - Testing tasks should be mandatory, not optional
+  ⚠ .specify/templates/spec-template.md - No changes needed (but should reference testing in review)
 Follow-up TODOs: None
 -->
 
@@ -49,6 +48,10 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 
 すべての入力データは、定義されたバリデーション関数を使用して検証する。バリデーション関数が存在する場合は、それを必ず使用し、未使用のバリデーション関数を残さない。型安全性を損なう非nullアサーション（`!`）の使用を避け、型ガードや条件分岐で適切に型を絞り込む。データベースの制約（UNIQUE、CHECK等）を最大限活用し、アプリケーションレベルとデータベースレベルの両方で整合性を保証する。
 
+### IX. 自動テストの実装と品質保証 (NON-NEGOTIABLE)
+
+すべての新機能は、実装前に自動テストを記述し、実装後にテストが通過することを必須とする。ユーザーストーリーごとに独立してテスト可能なテストスイートを実装する。バックエンドは単体テスト（サービス層、モデル層）と統合テスト（APIエンドポイント）を実装する。フロントエンドはコンポーネントテストとAPI統合テストを実装する。テストはCI/CDパイプラインで自動実行され、すべてのテストが通過するまでマージを禁止する。テストカバレッジは主要なビジネスロジックで80%以上を目標とする。
+
 ## Technology Stack Requirements
 
 ### Frontend
@@ -56,12 +59,14 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 - **Framework**: React (Vite) - SPA構成を採用し、高速な動作と将来のPWA化の容易さを確保する
 - **Language**: TypeScript - 型安全性を確保し、開発効率を向上させる
 - **Build Tool**: Vite - 高速な開発サーバーと最適化された本番ビルドを提供
+- **Testing**: Vitest + React Testing Library - 高速なユニットテストとコンポーネントテストを実現
 
 ### Backend
 
 - **Framework**: Hono - Cloudflare Workersで動作する超軽量フレームワーク。起動が爆速で、エッジ環境に最適化されている
 - **Language**: TypeScript - Frontend/Backend共に型安全性を確保
 - **Runtime**: Cloudflare Workers - エッジで実行され、グローバルに分散されたパフォーマンスを提供
+- **Testing**: Vitest + Hono test utilities - Cloudflare Workers環境でのテストを実現
 
 ### Database
 
@@ -75,6 +80,7 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 
 - **Language**: TypeScript - すべてのコードはTypeScriptで記述
 - **Package Manager**: npm または pnpm（プロジェクト要件に応じて選択）
+- **Testing Framework**: Vitest - Frontend/Backend共通のテストフレームワーク
 
 ## Development Workflow
 
@@ -90,17 +96,37 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 - エラーメッセージが日本語で統一されているか
 - バリデーション関数が適切に使用されているか
 - ハードコーディングがなく、定数が一元管理されているか
+- 新機能に対して適切な自動テストが実装されているか
+- すべてのテストが通過しているか
 
 ### Testing
 
-- すべての新機能は適切なテストを伴う
-- 型安全性はTypeScriptコンパイラによって保証される
-- エッジ環境での動作確認を優先する
+すべての新機能は、実装前にテストを記述し、実装後にテストが通過することを必須とする。テスト駆動開発（TDD）を推奨するが、最低限、実装と同時にテストを記述する。
+
+**テストの種類と要件**:
+
+- **単体テスト**: サービス層、モデル層、ユーティリティ関数のロジックをテストする。各関数の正常系・異常系をカバーする。
+- **統合テスト**: APIエンドポイントの動作をテストする。リクエスト/レスポンス、エラーハンドリング、バリデーションを検証する。
+- **コンポーネントテスト**: Reactコンポーネントのレンダリング、ユーザーインタラクション、状態管理をテストする。
+- **テストカバレッジ**: 主要なビジネスロジック（サービス層、APIエンドポイント）で80%以上のカバレッジを目標とする。
+
+**テスト実行**:
+
+- すべてのテストは `npm test` コマンドで実行可能であること
+- CI/CDパイプラインで自動実行され、すべてのテストが通過するまでマージを禁止する
+- ローカル開発環境でも同じテストが実行可能であること
+
+**テスト環境**:
+
+- バックエンド: Cloudflare Workers環境を模擬したテスト環境を使用する
+- フロントエンド: Vitest + React Testing Libraryを使用する
+- データベース: テスト用のローカルD1データベースまたはモックを使用する
 
 ### Deployment
 
 - Cloudflare Pagesへの自動デプロイを設定する
 - 本番環境へのデプロイ前に、ローカル環境とプレビュー環境での動作確認を必須とする
+- すべてのテストが通過していることを確認してからデプロイする
 
 ## Governance
 
@@ -121,10 +147,10 @@ Frontend/Backend共にTypeScriptを使用し、型安全性を確保する。す
 
 ### Compliance Review
 
-すべてのプルリクエストは、この憲法への準拠を確認するレビューを必須とする。複雑性の追加は正当化され、より簡単な代替案が検討されたことを文書化する必要がある。コードレビューでは、新たに追加された原則（VI, VII, VIII）への準拠を特に確認する。
+すべてのプルリクエストは、この憲法への準拠を確認するレビューを必須とする。複雑性の追加は正当化され、より簡単な代替案が検討されたことを文書化する必要がある。コードレビューでは、新たに追加された原則（VI, VII, VIII, IX）への準拠を特に確認する。テストが実装されていない新機能は、原則IXに違反するため、マージを禁止する。
 
 ### Versioning Policy
 
 憲法のバージョンは、セマンティックバージョニング（MAJOR.MINOR.PATCH）に従う。各変更は適切なバージョン番号の更新と共に記録される。
 
-**Version**: 1.1.0 | **Ratified**: 2025-12-21 | **Last Amended**: 2025-12-22
+**Version**: 1.2.0 | **Ratified**: 2025-12-21 | **Last Amended**: 2025-12-22
