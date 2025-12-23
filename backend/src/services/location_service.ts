@@ -132,31 +132,36 @@ export class LocationService {
       throw new Error('場所の形式は "Physical" または "Digital" である必要があります')
     }
 
-    // Build update query dynamically
-    const updates: string[] = []
-    const values: unknown[] = []
+    // Build update query explicitly for better readability and maintainability
+    // Only update fields that are provided
+    const updateFields: string[] = []
+    const updateValues: unknown[] = []
 
     if (input.name !== undefined) {
-      updates.push('name = ?')
-      values.push(input.name)
+      updateFields.push('name = ?')
+      updateValues.push(input.name)
     }
     if (input.type !== undefined) {
-      updates.push('type = ?')
-      values.push(input.type)
+      updateFields.push('type = ?')
+      updateValues.push(input.type)
     }
 
-    if (updates.length === 0) {
+    if (updateFields.length === 0) {
       // No updates, return existing
       return existing
     }
 
-    updates.push('updated_at = datetime(\'now\')')
-    values.push(id)
+    // Always update updated_at timestamp
+    updateFields.push('updated_at = datetime(\'now\')')
+    updateValues.push(id)
+
+    // Construct SQL query explicitly
+    const sql = `UPDATE locations SET ${updateFields.join(', ')} WHERE id = ?`
 
     try {
       await this.db
-        .prepare(`UPDATE locations SET ${updates.join(', ')} WHERE id = ?`)
-        .bind(...values)
+        .prepare(sql)
+        .bind(...updateValues)
         .run()
 
       // Fetch the updated location

@@ -7,6 +7,7 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import type { Ownership, OwnershipCreateInput } from '../models/ownership'
 import { validateOwnershipInput } from '../models/ownership'
+import { BookService } from './book_service'
 
 export class OwnershipService {
   constructor(private db: D1Database) {}
@@ -31,13 +32,20 @@ export class OwnershipService {
 
   /**
    * Create a new ownership record
-   * Validates location ownership and checks for duplicates
+   * Validates location ownership, book existence, and checks for duplicates
    */
   async create(input: OwnershipCreateInput): Promise<Ownership> {
     // Validate input
     const validation = validateOwnershipInput(input)
     if (!validation.valid) {
       throw new Error(validation.error)
+    }
+
+    // Validate that book exists
+    const bookService = new BookService(this.db)
+    const book = await bookService.findByISBN(input.isbn)
+    if (!book) {
+      throw new Error(`ISBN ${input.isbn} の書籍が見つかりません`)
     }
 
     // Validate that location belongs to user
@@ -179,23 +187,86 @@ export class OwnershipService {
   /**
    * Create multiple ownerships for a book
    * Used when registering a book with multiple locations
+   * Uses D1 batch operations for atomicity
+   * 
+   * Note: D1 doesn't support traditional transactions, but batch operations
+   * provide better consistency. If any ownership creation fails, all operations
+   * in the batch will fail together.
    */
   async createMultiple(inputs: OwnershipCreateInput[]): Promise<Ownership[]> {
-    const results: Ownership[] = []
+    if (inputs.length === 0) {
+      return []
+    }
 
+    // Validate all inputs before attempting to create
+    // This prevents partial failures
     for (const input of inputs) {
-      try {
-        const ownership = await this.create(input)
-        results.push(ownership)
-      } catch (error) {
-        // If any ownership creation fails, we should rollback?
-        // For now, we'll continue and let the caller handle partial failures
-        // In a transaction-based system, we'd use a transaction here
-        throw error
+      const validation = validateOwnershipInput(input)
+      if (!validation.valid) {
+        throw new Error(validation.error)
+      }
+
+      // Validate book exists (check once for all inputs with same ISBN)
+      const bookService = new BookService(this.db)
+      const book = await bookService.findByISBN(input.isbn)
+      if (!book) {
+        throw new Error(`ISBN ${input.isbn} の書籍が見つかりません`)
+      }
+
+      // Validate location ownership
+      const locationOwned = await this.validateLocationOwnership(input.location_id, input.user_id)
+      if (!locationOwned) {
+        throw new Error(`場所ID ${input.location_id} はこのユーザーのものではありません`)
+      }
+
+      // Check for duplicates
+      const existing = await this.findByUserBookAndLocation(
+        input.user_id,
+        input.isbn,
+        input.location_id
+      )
+      if (existing) {
+        throw new Error(`この書籍は既に場所ID ${input.location_id} に登録されています`)
       }
     }
 
-    return results
+    // Use batch operations for atomicity
+    // If any statement fails, the entire batch fails
+    const statements = inputs.map((input) =>
+      this.db
+        .prepare(
+          `INSERT INTO ownerships (user_id, isbn, location_id, created_at)
+           VALUES (?, ?, ?, datetime('now'))`
+        )
+        .bind(input.user_id, input.isbn, input.location_id)
+    )
+
+    try {
+      const results = await this.db.batch(statements)
+      const ownerships: Ownership[] = []
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]
+        if (!result.meta.last_row_id) {
+          throw new Error(`所有情報の作成に失敗しました (index: ${i})`)
+        }
+
+        const ownership = await this.findById(result.meta.last_row_id)
+        if (!ownership) {
+          throw new Error(`所有情報の取得に失敗しました (index: ${i})`)
+        }
+
+        ownerships.push(ownership)
+      }
+
+      return ownerships
+    } catch (error) {
+      // Handle database UNIQUE constraint violation
+      if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+        throw new Error('1つ以上の所有情報が既に登録されています')
+      }
+      throw error
+    }
   }
 }
 
