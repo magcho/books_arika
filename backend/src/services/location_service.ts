@@ -11,6 +11,24 @@ export class LocationService {
   constructor(private db: D1Database) {}
 
   /**
+   * Validate that location belongs to user
+   * This is a critical security check to prevent users from accessing
+   * locations they don't own
+   */
+  async validateLocationOwnership(location_id: number, user_id: string): Promise<boolean> {
+    const result = await this.db
+      .prepare('SELECT user_id FROM locations WHERE id = ?')
+      .bind(location_id)
+      .first<{ user_id: string }>()
+
+    if (!result) {
+      return false
+    }
+
+    return result.user_id === user_id
+  }
+
+  /**
    * Create a new location
    * Validates name uniqueness within user
    */

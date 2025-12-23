@@ -8,8 +8,8 @@ import { HTTPException } from 'hono/http-exception'
 import { cors } from './middleware/cors'
 import { errorHandler } from './middleware/error'
 import { logger } from './middleware/logger'
-// import { locationsRoutes } from './routes/locations'
-// import { ownershipsRoutes } from './routes/ownerships'
+import { locationsRoutes } from './routes/locations'
+import { ownershipsRoutes } from './routes/ownerships'
 
 const app = new Hono()
 
@@ -30,8 +30,8 @@ import { searchRoutes } from './routes/search'
 // Note: Using app.route() with full path, routes define handlers with '/'
 app.route('/api/books', booksRoutes)
 app.route('/api/search', searchRoutes)
-// app.route('/api/locations', locationsRoutes)
-// app.route('/api/ownerships', ownershipsRoutes)
+app.route('/api/locations', locationsRoutes)
+app.route('/api/ownerships', ownershipsRoutes)
 
 // Error handler must be last
 app.onError(errorHandler)
