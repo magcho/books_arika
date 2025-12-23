@@ -56,6 +56,8 @@ npm test -- --coverage
 
 Test coverage reports are generated in `coverage/` directory.
 
+**Note**: Coverage generation is only available in local development environment. In CI/CD (GitHub Actions), coverage is disabled due to Cloudflare Workers environment limitations (`node:inspector` module is not available in Workers runtime). Tests run without coverage in CI/CD to ensure compatibility.
+
 ### Test Structure
 
 - `tests/unit/` - Unit tests for services and models

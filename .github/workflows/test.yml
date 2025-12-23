@@ -27,19 +27,21 @@ jobs:
         run: cd backend && npm ci
 
       - name: Run Backend Tests
-        run: cd backend && npm test -- --run --coverage
+        run: cd backend && npm test -- --run
         timeout-minutes: 1
         env:
           GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY || 'dummy-api-key' }}
 
-      - name: Upload Coverage Reports
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./backend/coverage/coverage-final.json
-          flags: backend
-          name: backend-coverage
-        continue-on-error: true
-        if: always()
+      # Note: Backend coverage is disabled in CI/CD due to Cloudflare Workers environment
+      # limitations (node:inspector not available). Coverage can be generated locally.
+      # - name: Upload Coverage Reports
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./backend/coverage/coverage-final.json
+      #     flags: backend
+      #     name: backend-coverage
+      #   continue-on-error: true
+      #   if: always()
 
   test-frontend:
     runs-on: ubuntu-latest
