@@ -1,0 +1,107 @@
+# GitHub ブランチ保護ルールセット設定ファイル
+# このファイルを編集して、スクリプトで適用できます
+# 
+# 注意: GitHub APIの形式に合わせて、このファイルの構造を定義しています
+# 実際のAPIリクエスト時には、スクリプトが適切な形式に変換します
+
+rulesets:
+  # main ブランチ用ルールセット（厳格）
+  - name: main-branch-protection
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "refs/heads/main"
+    rules:
+      # 必須ステータスチェック
+      required_status_checks:
+        strict: true  # ブランチが最新であることを要求
+        contexts:
+          - "test-backend"
+          - "test-frontend"
+      
+      # プルリクエストレビュー
+      pull_request:
+        required_approving_review_count: 1
+        dismiss_stale_reviews_on_push: true
+        require_code_owner_review: false
+        require_last_push_approval: false
+        required_review_thread_resolution: true
+      
+      # その他の保護設定
+      required_linear_history: true
+      allow_force_pushes: false
+      allow_deletions: false
+      # 注意: required_conversation_resolution は現在GitHub APIでサポートされていません
+      # required_conversation_resolution: true
+      # 管理者も含めてルールを適用（bypass_actorsを空配列にする）
+      bypass_actors: []
+
+  # develop ブランチ用ルールセット（中程度）
+  - name: develop-branch-protection
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "refs/heads/develop"
+    rules:
+      # 必須ステータスチェック
+      required_status_checks:
+        strict: true
+        contexts:
+          - "test-backend"
+          - "test-frontend"
+      
+      # プルリクエストレビュー
+      pull_request:
+        required_approving_review_count: 1
+        dismiss_stale_reviews_on_push: true
+        require_code_owner_review: false
+        require_last_push_approval: false
+        required_review_thread_resolution: true
+      
+      # その他の保護設定
+      required_linear_history: false
+      allow_force_pushes: false
+      allow_deletions: false
+      # 注意: required_conversation_resolution は現在GitHub APIでサポートされていません
+      # required_conversation_resolution: true
+      bypass_actors: []
+
+  # 機能ブランチ用ルールセット（緩い）
+  - name: feature-branch-protection
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include:
+          - "refs/heads/feature/*"
+          - "refs/heads/fix/*"
+          - "refs/heads/hotfix/*"
+    rules:
+      # 必須ステータスチェック
+      required_status_checks:
+        strict: false
+        contexts:
+          - "test-backend"
+          - "test-frontend"
+      
+      # プルリクエストレビュー（機能ブランチは柔軟に）
+      pull_request:
+        required_approving_review_count: 0
+        dismiss_stale_reviews_on_push: false
+        require_code_owner_review: false
+        require_last_push_approval: false
+        required_review_thread_resolution: false
+      
+      # その他の保護設定
+      required_linear_history: false
+      allow_force_pushes: false
+      allow_deletions: true  # 機能ブランチは削除可能
+      # 注意: required_conversation_resolution は現在GitHub APIでサポートされていません
+      # required_conversation_resolution: false
+      # 管理者はバイパス可能（bypass_actorsをnullにする）
+      bypass_actors: null
+
