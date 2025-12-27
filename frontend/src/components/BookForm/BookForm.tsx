@@ -3,7 +3,7 @@
  * Handles book registration via keyword search, barcode scan, or manual entry
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { searchBooks, searchByBarcode, createBook } from '../../services/book_api'
 import { listLocations } from '../../services/location_api'
 import type { BookSearchResult, BookCreateRequest, Location } from '../../types'
@@ -35,23 +35,25 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
   const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>([])
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
 
-  // Load locations on mount
-  useEffect(() => {
-    loadLocations()
-  }, [defaultUserId])
-
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     setIsLoadingLocations(true)
     try {
       const response = await listLocations(defaultUserId)
       setLocations(response.locations || [])
     } catch (err) {
-      // Silently fail - locations are optional
+      // Show error to user but don't block form submission
+      // Locations are optional for book creation
       console.error('Failed to load locations:', err)
+      setError('場所一覧の読み込みに失敗しました。場所を選択せずに書籍を登録できます。')
     } finally {
       setIsLoadingLocations(false)
     }
-  }
+  }, [defaultUserId])
+
+  // Load locations on mount
+  useEffect(() => {
+    loadLocations()
+  }, [loadLocations])
 
   const handleLocationToggle = (locationId: number) => {
     setSelectedLocationIds((prev) =>

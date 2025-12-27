@@ -37,7 +37,7 @@ export async function createOwnership(data: OwnershipCreateRequest): Promise<Own
 /**
  * Delete ownership
  */
-export async function deleteOwnership(ownership_id: number): Promise<void> {
-  return del<void>(`/ownerships/${ownership_id}`)
+export async function deleteOwnership(ownership_id: number, user_id: string): Promise<void> {
+  return del<void>(`/ownerships/${ownership_id}?user_id=${encodeURIComponent(user_id)}`)
 }
 
