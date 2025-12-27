@@ -21,13 +21,13 @@ rulesets:
           - "test-backend"
           - "test-frontend"
       
-      # プルリクエストレビュー
+      # プルリクエストレビュー（承認数制限なし）
       pull_request:
-        required_approving_review_count: 1
-        dismiss_stale_reviews_on_push: true
+        required_approving_review_count: 0
+        dismiss_stale_reviews_on_push: false
         require_code_owner_review: false
         require_last_push_approval: false
-        required_review_thread_resolution: true
+        required_review_thread_resolution: false
       
       # その他の保護設定
       required_linear_history: true
@@ -54,13 +54,13 @@ rulesets:
           - "test-backend"
           - "test-frontend"
       
-      # プルリクエストレビュー
+      # プルリクエストレビュー（承認数制限なし）
       pull_request:
-        required_approving_review_count: 1
-        dismiss_stale_reviews_on_push: true
+        required_approving_review_count: 0
+        dismiss_stale_reviews_on_push: false
         require_code_owner_review: false
         require_last_push_approval: false
-        required_review_thread_resolution: true
+        required_review_thread_resolution: false
       
       # その他の保護設定
       required_linear_history: false
