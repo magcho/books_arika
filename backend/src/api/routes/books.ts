@@ -73,6 +73,33 @@ books.post('/', async (c) => {
     })
   }
 
+  // Validate ownerships before creating the book
+  // This ensures we don't create a book if ownership creation will fail
+  // Note: createMultiple() also validates ownership, but we validate here first
+  // to avoid creating a book that can't be associated with the requested locations
+  if (body.location_ids && body.location_ids.length > 0) {
+    const ownershipService = new OwnershipService(db)
+    
+    // Validate that all location_ids belong to the user
+    // This is an early validation before book creation
+    for (const location_id of body.location_ids) {
+      const locationOwned = await ownershipService.validateLocationOwnership(
+        location_id,
+        body.user_id
+      )
+      if (!locationOwned) {
+        throw new HTTPException(403, {
+          message: JSON.stringify({
+            error: {
+              message: `場所ID ${location_id} はこのユーザーのものではありません`,
+              code: 'LOCATION_OWNERSHIP_ERROR',
+            },
+          }),
+        })
+      }
+    }
+  }
+
   try {
     const book = await bookService.create({
       isbn: body.isbn || null,
@@ -83,26 +110,10 @@ books.post('/', async (c) => {
     })
 
     // Create ownerships if location_ids are provided
+    // Note: createMultiple() will also validate ownership internally,
+    // but we've already validated above to prevent book creation if validation fails
     if (body.location_ids && body.location_ids.length > 0) {
       const ownershipService = new OwnershipService(db)
-      
-      // Validate that all location_ids belong to the user
-      for (const location_id of body.location_ids) {
-        const locationOwned = await ownershipService.validateLocationOwnership(
-          location_id,
-          body.user_id
-        )
-        if (!locationOwned) {
-          throw new HTTPException(403, {
-            message: JSON.stringify({
-              error: {
-                message: `場所ID ${location_id} はこのユーザーのものではありません`,
-                code: 'LOCATION_OWNERSHIP_ERROR',
-              },
-            }),
-          })
-        }
-      }
 
       // Create ownerships for each location
       const ownershipInputs = body.location_ids.map((location_id) => ({
@@ -111,14 +122,10 @@ books.post('/', async (c) => {
         location_id: location_id,
       }))
 
-      try {
-        await ownershipService.createMultiple(ownershipInputs)
-      } catch (ownershipError) {
-        // If ownership creation fails, we still return the book
-        // The book was created successfully, ownerships can be added later
-        // Log the error but don't fail the request
-        console.error('所有情報の作成に失敗しました:', ownershipError)
-      }
+      // If ownership creation fails, throw an error
+      // The book was created, but we should fail the request to indicate
+      // that the complete operation (book + ownerships) failed
+      await ownershipService.createMultiple(ownershipInputs)
     }
 
     return c.json(book, 201)
