@@ -37,12 +37,11 @@
 
 ##### プルリクエストレビュー
 
-✅ **プルリクエストレビューを必須化**
+⚠️ **プルリクエストレビュー（承認数制限なし）**
 
 - 「Require a pull request before merging」を有効化
-- 「Require approvals」: `1` 以上（推奨: `1`）
-- 「Dismiss stale pull request approvals when new commits are pushed」を有効化（推奨）
-- 「Require review from Code Owners」を有効化（CODEOWNERSファイルがある場合）
+- 「Require approvals」: `0`（承認不要でマージ可能）
+- 注意: 現在の設定では承認数制限は設けていません。テストが通ればマージ可能です。
 
 ##### ブランチ更新制限
 
@@ -90,11 +89,11 @@
 
 ##### プルリクエストレビュー
 
-✅ **プルリクエストレビューを必須化**
+⚠️ **プルリクエストレビュー（承認数制限なし）**
 
 - 「Require a pull request before merging」を有効化
-- 「Require approvals」: `1` 以上（推奨: `1`）
-- 「Dismiss stale pull request approvals when new commits are pushed」を有効化（推奨）
+- 「Require approvals」: `0`（承認不要でマージ可能）
+- 注意: 現在の設定では承認数制限は設けていません。テストが通ればマージ可能です。
 
 ##### ブランチ更新制限
 

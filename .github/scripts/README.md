@@ -46,11 +46,23 @@
 # スクリプトに実行権限を付与（初回のみ）
 chmod +x .github/scripts/apply-branch-protection.sh
 
+# ドライランモードで確認（実際の変更は行いません）
+.github/scripts/apply-branch-protection.sh --dry-run
+
 # ルールセットを適用
 .github/scripts/apply-branch-protection.sh
 ```
 
-### 3. 適用状況の確認
+### 3. ドライランモード（推奨）
+
+実際にルールセットを適用する前に、設定内容を確認できます：
+
+```bash
+# ドライランモードで実行（実際の変更は行いません）
+.github/scripts/apply-branch-protection.sh --dry-run
+```
+
+### 4. 適用状況の確認
 
 ```bash
 # 現在のルールセット一覧を確認

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # GitHub ブランチ保護ルールセット適用スクリプト
-# 使用方法: ./apply-branch-protection.sh
+# 使用方法: ./apply-branch-protection.sh [--dry-run] [--dry-run]
 
 set -e
 
@@ -28,6 +28,13 @@ info() {
 warn() {
     echo -e "${YELLOW}⚠️  $1${NC}"
 }
+
+# ドライランモードのフラグ
+DRY_RUN=false
+if [[ "$1" == "--dry-run" ]] || [[ "$1" == "-n" ]]; then
+    DRY_RUN=true
+    info "ドライランモード: 実際の変更は行いません"
+fi
 
 # 前提条件チェック
 check_prerequisites() {
@@ -92,6 +99,39 @@ convert_to_json() {
     fi
 }
 
+# 設定ファイルの検証
+validate_config() {
+    info "設定ファイルを検証中..."
+    
+    local full_json=$(convert_to_json)
+    
+    # 必須フィールドのチェック
+    local rulesets_count=$(echo "$full_json" | jq '.rulesets | length')
+    if [ "$rulesets_count" -eq 0 ]; then
+        error "設定ファイルにルールセットが定義されていません"
+    fi
+    
+    # 各ルールセットの必須フィールドをチェック
+    echo "$full_json" | jq -c '.rulesets[]' | while IFS= read -r ruleset_json; do
+        local name=$(echo "$ruleset_json" | jq -r '.name')
+        if [ -z "$name" ] || [ "$name" = "null" ]; then
+            error "ルールセットにnameが定義されていません"
+        fi
+        
+        local target=$(echo "$ruleset_json" | jq -r '.target')
+        if [ -z "$target" ] || [ "$target" = "null" ]; then
+            error "ルールセット '$name' にtargetが定義されていません"
+        fi
+        
+        local enforcement=$(echo "$ruleset_json" | jq -r '.enforcement')
+        if [ -z "$enforcement" ] || [ "$enforcement" = "null" ]; then
+            error "ルールセット '$name' にenforcementが定義されていません"
+        fi
+    done
+    
+    info "✅ 設定ファイルの検証が完了しました"
+}
+
 # ルールセットを作成/更新
 apply_ruleset() {
     local ruleset_json="$1"
@@ -109,20 +149,28 @@ apply_ruleset() {
         existing_id=$(echo "$existing_rulesets" | jq -r ".[] | select(.name == \"$ruleset_name\") | .id" 2>/dev/null || echo "")
     fi
     
+    if [ "$DRY_RUN" = true ]; then
+        info "【ドライラン】ルールセット '$ruleset_name' を適用します:"
+        echo "$ruleset_json" | jq .
+        return 0
+    fi
+    
     if [ -n "$existing_id" ] && [ "$existing_id" != "null" ] && [ "$existing_id" != "" ]; then
         warn "既存のルールセットが見つかりました (ID: $existing_id)。更新します..."
-        if gh api -X PUT "repos/$REPO_OWNER/$REPO_NAME/rulesets/$existing_id" \
-            --input - <<< "$ruleset_json" 2>/dev/null; then
+        local response
+        if response=$(gh api -X PUT "repos/$REPO_OWNER/$REPO_NAME/rulesets/$existing_id" \
+            --input - <<< "$ruleset_json" 2>&1); then
             info "✅ ルールセットを更新しました: $ruleset_name"
         else
-            error "ルールセットの更新に失敗しました。APIレスポンスを確認してください。"
+            error "ルールセットの更新に失敗しました。\nAPIレスポンス:\n$response"
         fi
     else
-        if gh api -X POST "repos/$REPO_OWNER/$REPO_NAME/rulesets" \
-            --input - <<< "$ruleset_json" 2>/dev/null; then
+        local response
+        if response=$(gh api -X POST "repos/$REPO_OWNER/$REPO_NAME/rulesets" \
+            --input - <<< "$ruleset_json" 2>&1); then
             info "✅ ルールセットを作成しました: $ruleset_name"
         else
-            error "ルールセットの作成に失敗しました。APIレスポンスを確認してください。\n設定内容:\n$(echo "$ruleset_json" | jq .)"
+            error "ルールセットの作成に失敗しました。\nAPIレスポンス:\n$response\n\n設定内容:\n$(echo "$ruleset_json" | jq .)"
         fi
     fi
 }
@@ -142,6 +190,10 @@ main() {
     if ! command -v yq &> /dev/null; then
         error "yq が必要です。YAMLファイルを処理できません。"
     fi
+
+    # 設定ファイルの検証
+    validate_config
+    echo ""
 
     local full_json=$(convert_to_json)
     local rulesets=$(echo "$full_json" | jq -c '.rulesets[]')
