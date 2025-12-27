@@ -3,9 +3,10 @@
  * Handles book registration via keyword search, barcode scan, or manual entry
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { searchBooks, searchByBarcode, createBook } from '../../services/book_api'
-import type { BookSearchResult, BookCreateRequest } from '../../types'
+import { listLocations } from '../../services/location_api'
+import type { BookSearchResult, BookCreateRequest, Location } from '../../types'
 import { BarcodeScanner } from '../BarcodeScanner/BarcodeScanner'
 import { ApiClientError } from '../../services/api'
 
@@ -30,6 +31,77 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [duplicateInfo, setDuplicateInfo] = useState<{ isbn: string } | null>(null)
+  const [locations, setLocations] = useState<Location[]>([])
+  const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>([])
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false)
+
+  const loadLocations = useCallback(async () => {
+    setIsLoadingLocations(true)
+    try {
+      const response = await listLocations(defaultUserId)
+      setLocations(response.locations || [])
+    } catch (err) {
+      // Show error to user but don't block form submission
+      // Locations are optional for book creation
+      console.error('Failed to load locations:', err)
+      setError('場所一覧の読み込みに失敗しました。場所を選択せずに書籍を登録できます。')
+    } finally {
+      setIsLoadingLocations(false)
+    }
+  }, [defaultUserId])
+
+  // Load locations on mount
+  useEffect(() => {
+    loadLocations()
+  }, [loadLocations])
+
+  const handleLocationToggle = (locationId: number) => {
+    setSelectedLocationIds((prev) =>
+      prev.includes(locationId)
+        ? prev.filter((id) => id !== locationId)
+        : [...prev, locationId]
+    )
+  }
+
+  // Location selection UI component
+  const LocationSelection = () => {
+    if (locations.length === 0) {
+      return null
+    }
+
+    return (
+      <div>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+          所有場所（複数選択可）:
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {locations.map((location) => (
+            <label
+              key={location.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0.5rem',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selectedLocationIds.includes(location.id)}
+                onChange={() => handleLocationToggle(location.id)}
+                style={{ marginRight: '0.5rem' }}
+              />
+              <span>
+                {location.name} ({location.type === 'Physical' ? '物理' : 'デジタル'})
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -117,6 +189,7 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
         isbn: selectedBookData ? selectedBookData.isbn : manualBook.isbn || undefined,
         thumbnail_url: selectedBookData ? selectedBookData.thumbnail_url : undefined,
         is_doujin: mode === 'manual' ? manualBook.is_doujin : false,
+        location_ids: selectedLocationIds.length > 0 ? selectedLocationIds : undefined,
       }
 
       await createBook(bookData)
@@ -127,6 +200,7 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
       setSearchResults([])
       setSelectedBook(null)
       setManualBook({ title: '', author: '', isbn: '', is_doujin: false })
+      setSelectedLocationIds([])
     } catch (err) {
       if (err instanceof ApiClientError) {
         if (err.status === 409) {
@@ -274,22 +348,28 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
             </div>
           )}
 
+          {/* Location selection */}
           {selectedBook && (
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {isSubmitting ? '登録中...' : '登録'}
-            </button>
+            <>
+              <div style={{ marginBottom: '1rem' }}>
+                <LocationSelection />
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {isSubmitting ? '登録中...' : '登録'}
+              </button>
+            </>
           )}
         </div>
       )}
@@ -339,6 +419,8 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
                 同人誌
               </label>
             </div>
+            {/* Location selection */}
+            <LocationSelection />
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !manualBook.title.trim()}

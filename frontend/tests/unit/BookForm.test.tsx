@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BookForm } from '../../src/components/BookForm/BookForm'
 import { createBook, searchBooks, searchByBarcode } from '../../src/services/book_api'
+import { listLocations } from '../../src/services/location_api'
 import { mockFetchResponse, mockFetchError, resetFetchMock } from '../helpers/api'
 import { createMockBookSearchResult, createMockBook } from '../fixtures/books'
 
@@ -16,6 +17,10 @@ vi.mock('../../src/services/book_api', () => ({
   searchByBarcode: vi.fn(),
 }))
 
+vi.mock('../../src/services/location_api', () => ({
+  listLocations: vi.fn(),
+}))
+
 describe('BookForm', () => {
   const mockOnSuccess = vi.fn()
   const defaultUserId = 'default-user'
@@ -23,6 +28,8 @@ describe('BookForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetFetchMock()
+    // Mock successful location loading by default
+    ;(listLocations as any).mockResolvedValueOnce({ locations: [] })
   })
 
   it('should render book form', () => {
