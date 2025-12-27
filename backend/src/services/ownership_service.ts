@@ -170,6 +170,30 @@ export class OwnershipService {
   }
 
   /**
+   * Find ownerships by ISBN and user_id (for efficient filtering)
+   */
+  async findByISBNAndUserId(isbn: string, user_id: string): Promise<Ownership[]> {
+    const result = await this.db
+      .prepare('SELECT * FROM ownerships WHERE isbn = ? AND user_id = ? ORDER BY created_at DESC')
+      .bind(isbn, user_id)
+      .all<Ownership>()
+
+    return result.results || []
+  }
+
+  /**
+   * Find ownerships by location_id and user_id (for efficient filtering)
+   */
+  async findByLocationIdAndUserId(location_id: number, user_id: string): Promise<Ownership[]> {
+    const result = await this.db
+      .prepare('SELECT * FROM ownerships WHERE location_id = ? AND user_id = ? ORDER BY created_at DESC')
+      .bind(location_id, user_id)
+      .all<Ownership>()
+
+    return result.results || []
+  }
+
+  /**
    * Delete ownership
    */
   async delete(id: number): Promise<void> {
