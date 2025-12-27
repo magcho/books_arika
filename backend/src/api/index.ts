@@ -9,7 +9,7 @@ import { cors } from './middleware/cors'
 import { errorHandler } from './middleware/error'
 import { logger } from './middleware/logger'
 import { locationsRoutes } from './routes/locations'
-// import { ownershipsRoutes } from './routes/ownerships' // Will be added in PR #11
+import { ownershipsRoutes } from './routes/ownerships'
 
 const app = new Hono()
 
@@ -31,7 +31,7 @@ import { searchRoutes } from './routes/search'
 app.route('/api/books', booksRoutes)
 app.route('/api/search', searchRoutes)
 app.route('/api/locations', locationsRoutes)
-// app.route('/api/ownerships', ownershipsRoutes) // Will be added in PR #11
+app.route('/api/ownerships', ownershipsRoutes)
 
 // Error handler must be last
 app.onError(errorHandler)
