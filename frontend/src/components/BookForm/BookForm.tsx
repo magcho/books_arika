@@ -63,6 +63,46 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
     )
   }
 
+  // Location selection UI component
+  const LocationSelection = () => {
+    if (locations.length === 0) {
+      return null
+    }
+
+    return (
+      <div>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+          所有場所（複数選択可）:
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {locations.map((location) => (
+            <label
+              key={location.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0.5rem',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={selectedLocationIds.includes(location.id)}
+                onChange={() => handleLocationToggle(location.id)}
+                style={{ marginRight: '0.5rem' }}
+              />
+              <span>
+                {location.name} ({location.type === 'Physical' ? '物理' : 'デジタル'})
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setError('検索キーワードを入力してください')
@@ -311,38 +351,9 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
           {/* Location selection */}
           {selectedBook && (
             <>
-              {locations.length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                    所有場所（複数選択可）:
-                  </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {locations.map((location) => (
-                      <label
-                        key={location.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '0.5rem',
-                          border: '1px solid #ccc',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedLocationIds.includes(location.id)}
-                          onChange={() => handleLocationToggle(location.id)}
-                          style={{ marginRight: '0.5rem' }}
-                        />
-                        <span>
-                          {location.name} ({location.type === 'Physical' ? '物理' : 'デジタル'})
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div style={{ marginBottom: '1rem' }}>
+                <LocationSelection />
+              </div>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
@@ -409,38 +420,7 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
               </label>
             </div>
             {/* Location selection */}
-            {locations.length > 0 && (
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                  所有場所（複数選択可）:
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {locations.map((location) => (
-                    <label
-                      key={location.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0.5rem',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLocationIds.includes(location.id)}
-                        onChange={() => handleLocationToggle(location.id)}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span>
-                        {location.name} ({location.type === 'Physical' ? '物理' : 'デジタル'})
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+            <LocationSelection />
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !manualBook.title.trim()}
