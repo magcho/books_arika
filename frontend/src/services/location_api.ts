@@ -21,8 +21,8 @@ export async function listLocations(user_id: string): Promise<LocationsResponse>
 /**
  * Get location by ID
  */
-export async function getLocation(location_id: number): Promise<Location> {
-  return get<Location>(`/locations/${location_id}`)
+export async function getLocation(location_id: number, user_id: string): Promise<Location> {
+  return get<Location>(`/locations/${location_id}?user_id=${encodeURIComponent(user_id)}`)
 }
 
 /**
@@ -37,15 +37,16 @@ export async function createLocation(data: LocationCreateRequest): Promise<Locat
  */
 export async function updateLocation(
   location_id: number,
-  data: LocationUpdateRequest
+  data: LocationUpdateRequest,
+  user_id: string
 ): Promise<Location> {
-  return put<Location>(`/locations/${location_id}`, data)
+  return put<Location>(`/locations/${location_id}?user_id=${encodeURIComponent(user_id)}`, data)
 }
 
 /**
  * Delete location
  */
-export async function deleteLocation(location_id: number): Promise<void> {
-  return del<void>(`/locations/${location_id}`)
+export async function deleteLocation(location_id: number, user_id: string): Promise<void> {
+  return del<void>(`/locations/${location_id}?user_id=${encodeURIComponent(user_id)}`)
 }
 

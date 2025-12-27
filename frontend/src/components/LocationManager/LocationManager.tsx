@@ -3,7 +3,7 @@
  * Handles location CRUD operations
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   listLocations,
   createLocation,
@@ -29,11 +29,7 @@ export function LocationManager({ userId, onLocationChange }: LocationManagerPro
     type: 'Physical',
   })
 
-  useEffect(() => {
-    loadLocations()
-  }, [userId])
-
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -48,7 +44,11 @@ export function LocationManager({ userId, onLocationChange }: LocationManagerPro
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    loadLocations()
+  }, [loadLocations])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,7 +76,7 @@ export function LocationManager({ userId, onLocationChange }: LocationManagerPro
   const handleUpdate = async (id: number, data: LocationUpdateRequest) => {
     setError(null)
     try {
-      await updateLocation(id, data)
+      await updateLocation(id, data, userId)
       setEditingId(null)
       await loadLocations()
       onLocationChange?.()
@@ -96,7 +96,7 @@ export function LocationManager({ userId, onLocationChange }: LocationManagerPro
 
     setError(null)
     try {
-      await deleteLocation(id)
+      await deleteLocation(id, userId)
       await loadLocations()
       onLocationChange?.()
     } catch (err) {
