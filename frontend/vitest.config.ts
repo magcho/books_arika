@@ -7,6 +7,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
+    // CI/CD環境やエージェント実行時はウォッチモードを無効化
+    watch: process.env.CI === 'true' ? false : undefined,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
