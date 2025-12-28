@@ -24,12 +24,12 @@ describe('Storybook Configuration', () => {
     expect(mainTsContent).toContain('@storybook/addon-essentials')
   })
 
-  it('should have MemoryRouter decorator in preview.ts', () => {
-    const previewTsPath = join(process.cwd(), '.storybook', 'preview.ts')
-    const previewTsContent = readFileSync(previewTsPath, 'utf-8')
+  it('should have MemoryRouter decorator in preview.tsx', () => {
+    const previewTsxPath = join(process.cwd(), '.storybook', 'preview.tsx')
+    const previewTsxContent = readFileSync(previewTsxPath, 'utf-8')
     
-    expect(previewTsContent).toContain('MemoryRouter')
-    expect(previewTsContent).toContain('react-router-dom')
+    expect(previewTsxContent).toContain('MemoryRouter')
+    expect(previewTsxContent).toContain('react-router-dom')
   })
 })
 

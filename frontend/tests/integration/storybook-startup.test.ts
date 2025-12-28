@@ -29,9 +29,9 @@ describe('Storybook Startup', () => {
     expect(existsSync(mainTsPath)).toBe(true)
   })
 
-  it('should have preview.ts configuration file', () => {
-    const previewTsPath = join(process.cwd(), '.storybook', 'preview.ts')
-    expect(existsSync(previewTsPath)).toBe(true)
+  it('should have preview.tsx configuration file', () => {
+    const previewTsxPath = join(process.cwd(), '.storybook', 'preview.tsx')
+    expect(existsSync(previewTsxPath)).toBe(true)
   })
 })
 
