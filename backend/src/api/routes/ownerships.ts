@@ -142,28 +142,52 @@ ownerships.post('/', async (c) => {
     if (error instanceof HTTPException) {
       throw error
     }
-    // Handle duplicate ownership
-    if (error instanceof Error && error.message.includes('既に登録されています')) {
-      throw new HTTPException(409, {
-        message: JSON.stringify({
-          error: {
-            message: error.message,
-            code: ERROR_CODES.DUPLICATE_OWNERSHIP,
-          },
-        }),
-      })
+    // Handle duplicate ownership - check for both Japanese message and UNIQUE constraint
+    if (error instanceof Error) {
+      const errorMessage = error.message
+      // Check for duplicate ownership error messages (must check first before other conditions)
+      // The error message from OwnershipService is: "この書籍は既にこの場所に登録されています"
+      // Use more flexible matching to handle potential encoding issues
+      if (
+        errorMessage.includes('既に') && errorMessage.includes('登録されています') ||
+        errorMessage.includes('UNIQUE constraint') ||
+        errorMessage.includes('UNIQUE constraint failed') ||
+        errorMessage.toLowerCase().includes('unique')
+      ) {
+        throw new HTTPException(409, {
+          message: JSON.stringify({
+            error: {
+              message: 'この書籍は既にこの場所に登録されています',
+              code: ERROR_CODES.DUPLICATE_OWNERSHIP,
+            },
+          }),
+        })
+      }
+      // Handle location ownership validation error
+      if (errorMessage.includes('このユーザーのものではありません')) {
+        throw new HTTPException(403, {
+          message: JSON.stringify({
+            error: {
+              message: errorMessage,
+              code: ERROR_CODES.LOCATION_OWNERSHIP_ERROR,
+            },
+          }),
+        })
+      }
+      // Handle book not found error
+      if (errorMessage.includes('書籍が見つかりません')) {
+        throw new HTTPException(404, {
+          message: JSON.stringify({
+            error: {
+              message: errorMessage,
+              code: 'BOOK_NOT_FOUND',
+            },
+          }),
+        })
+      }
     }
-    // Handle location ownership validation error
-    if (error instanceof Error && error.message.includes('このユーザーのものではありません')) {
-      throw new HTTPException(403, {
-        message: JSON.stringify({
-          error: {
-            message: error.message,
-            code: ERROR_CODES.LOCATION_OWNERSHIP_ERROR,
-          },
-        }),
-      })
-    }
+    // If we get here, it's an unexpected error - log it and return 500
+    console.error('Unexpected ownership creation error:', error)
     throw new HTTPException(500, {
       message: JSON.stringify({
         error: {
