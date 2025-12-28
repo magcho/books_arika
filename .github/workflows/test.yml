@@ -27,7 +27,7 @@ jobs:
         run: cd backend && npm ci
 
       - name: Run Backend Tests
-        run: cd backend && npm test -- --run
+        run: cd backend && npm test
         timeout-minutes: 1
         env:
           GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY || 'dummy-api-key' }}
@@ -61,7 +61,7 @@ jobs:
         run: cd frontend && npm ci
 
       - name: Run Frontend Tests
-        run: cd frontend && npm test -- --run
+        run: cd frontend && npm test
         timeout-minutes: 1
 
       # Note: Frontend coverage is disabled in CI/CD due to compatibility issues
