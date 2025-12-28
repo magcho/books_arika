@@ -81,12 +81,14 @@ rulesets:
           - "refs/heads/fix/*"
           - "refs/heads/hotfix/*"
     rules:
-      # 必須ステータスチェック
-      required_status_checks:
-        strict: false
-        contexts:
-          - "test-backend"
-          - "test-frontend"
+      # 必須ステータスチェックを削除
+      # 機能ブランチへのプッシュ時にはチェックを要求しない
+      # PRマージ時のチェックは、mainブランチのルールで保護される
+      # required_status_checks:
+      #   strict: false
+      #   contexts:
+      #     - "test-backend"
+      #     - "test-frontend"
       
       # プルリクエストレビュー（機能ブランチは柔軟に）
       pull_request:

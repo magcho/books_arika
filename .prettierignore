@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Testing
+coverage/
+.nyc_output/
+
+# Config files
+*.config.js
+*.config.ts
+
+# Generated files
+*.min.js
+*.min.css
+
+# Cloudflare
+.wrangler/
+
+# Logs
+*.log
+
