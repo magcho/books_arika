@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-12-22
 
 ## Active Technologies
+- TypeScript 5.3.0 + React 18.2.0, Vite 5.0.8, Storybook 7.x系（@storybook/react-vite） (003-storybook-setup)
+- N/A (開発ツール) (003-storybook-setup)
 
 - TypeScript 5.x (Frontend/Backend共通) (001-book-management)
 
@@ -23,6 +25,7 @@ npm test && npm run lint
 TypeScript 5.x (Frontend/Backend共通): Follow standard conventions
 
 ## Recent Changes
+- 003-storybook-setup: Added TypeScript 5.3.0 + React 18.2.0, Vite 5.0.8, Storybook 7.x系（@storybook/react-vite）
 
 - 001-book-management: Added TypeScript 5.x (Frontend/Backend共通)
 
