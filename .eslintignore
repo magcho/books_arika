@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Config files
+*.config.js
+*.config.ts
+
+# Generated files
+*.min.js
+*.min.css
+
+# Cloudflare
+.wrangler/
+
+# Logs
+*.log
+
