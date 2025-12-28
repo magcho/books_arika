@@ -62,3 +62,41 @@ Preview production build:
 npm run preview
 ```
 
+## Storybook
+
+Storybookを使用してコンポーネントを個別に確認・開発できます。
+
+### 起動
+
+Storybookを起動:
+```bash
+npm run storybook
+```
+
+ブラウザで `http://localhost:6006` にアクセスしてコンポーネントを確認できます。
+
+### ビルド
+
+Storybookを静的ファイルとしてビルド:
+```bash
+npm run build-storybook
+```
+
+ビルド結果は `storybook-static/` ディレクトリに出力されます。
+
+### 利用可能なコンポーネント
+
+以下のコンポーネントがStorybookで確認できます:
+
+- **BarcodeScanner**: バーコードスキャンコンポーネント
+- **BookForm**: 書籍登録フォームコンポーネント
+- **LocationManager**: 場所管理コンポーネント
+
+各コンポーネントには、様々な状態（デフォルト、ローディング、エラーなど）のストーリーが定義されています。
+
+### 機能
+
+- **MSWによるAPIモック**: 外部APIに依存するコンポーネントは、MSWを使用してモックされています
+- **MemoryRouter統合**: react-router-domに依存するコンポーネントは、MemoryRouterでラップされています
+- **インタラクティブテスト**: 各コンポーネントには、ユーザー操作をシミュレートするインタラクティブなストーリーが含まれています
+
