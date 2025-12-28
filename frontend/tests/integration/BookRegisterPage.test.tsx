@@ -47,10 +47,27 @@ describe('BookRegisterPage', () => {
 
     render(<BookRegisterPage />)
 
-    // Wait for locations to load and be displayed
+    // Wait for locations to load
+    await waitFor(() => {
+      expect(listLocations).toHaveBeenCalled()
+    }, { timeout: 3000 })
+
+    // Wait a bit for the async state update to complete
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Switch to manual mode to see locations
+    const manualTab = screen.getByText(/手動登録/i)
+    fireEvent.click(manualTab)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
+    })
+
+    // Wait for locations to be displayed
     await waitFor(
       () => {
-        expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+        // The location name appears in a label or span within the checkbox label
+        expect(screen.getByLabelText(/自宅本棚/)).toBeInTheDocument()
       },
       { timeout: 3000 }
     )
@@ -83,8 +100,23 @@ describe('BookRegisterPage', () => {
 
     render(<BookRegisterPage />)
 
-    // Wait for locations to load and be displayed
-    // Locations are displayed in the LocationSelection component
+    // Wait for locations to load
+    await waitFor(() => {
+      expect(listLocations).toHaveBeenCalled()
+    }, { timeout: 3000 })
+
+    // Wait a bit for the async state update to complete
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Switch to manual mode first to see locations
+    const manualTab = screen.getByText(/手動登録/i)
+    fireEvent.click(manualTab)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
+    })
+
+    // Wait for locations to be displayed in manual mode
     await waitFor(
       () => {
         // The location name appears in a label or span within the checkbox label
@@ -92,14 +124,6 @@ describe('BookRegisterPage', () => {
       },
       { timeout: 3000 }
     )
-
-    // Switch to manual mode
-    const manualTab = screen.getByText(/手動登録/i)
-    fireEvent.click(manualTab)
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
-    })
 
     // Select location - use getByLabelText to find the checkbox
     const locationCheckbox = screen.getByLabelText(/自宅本棚/)
