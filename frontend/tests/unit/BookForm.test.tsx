@@ -164,9 +164,9 @@ describe('BookForm', () => {
     fireEvent.click(bookElement)
 
     await waitFor(() => {
-      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
-      expect(screen.getByText('Kindle')).toBeInTheDocument()
-    })
+      expect(screen.getByLabelText(/自宅本棚/)).toBeInTheDocument()
+      expect(screen.getByLabelText(/Kindle/)).toBeInTheDocument()
+    }, { timeout: 3000 })
   })
 
   it('should allow selecting multiple locations', async () => {
@@ -200,26 +200,54 @@ describe('BookForm', () => {
       expect(listLocations).toHaveBeenCalledWith(defaultUserId)
     })
 
+    // Wait a bit for the async state update to complete
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     // Switch to manual mode
     const manualTab = screen.getByText(/手動登録/i)
     fireEvent.click(manualTab)
 
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
-      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
-      expect(screen.getByText('Kindle')).toBeInTheDocument()
-    })
-
+    // Wait for manual mode form to render
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
     })
 
-    // Select locations
-    const location1Checkbox = screen.getByLabelText(/自宅本棚/)
-    const location2Checkbox = screen.getByLabelText(/Kindle/)
+    // Wait for locations to be displayed (check for label text which includes the location name)
+    await waitFor(() => {
+      expect(screen.getByLabelText(/自宅本棚/)).toBeInTheDocument()
+      expect(screen.getByLabelText(/Kindle/)).toBeInTheDocument()
+    }, { timeout: 3000 })
 
-    fireEvent.click(location1Checkbox)
-    fireEvent.click(location2Checkbox)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
+    })
+
+    // Select locations - find checkboxes by finding the label that contains the location name
+    // The label structure is: <label><input type="checkbox"/><span>Location Name (Type)</span></label>
+    const allCheckboxes = screen.getAllByRole('checkbox')
+    const location1Checkbox = allCheckboxes.find(cb => {
+      const label = cb.closest('label')
+      return label?.textContent?.includes('自宅本棚')
+    })
+    const location2Checkbox = allCheckboxes.find(cb => {
+      const label = cb.closest('label')
+      return label?.textContent?.includes('Kindle')
+    })
+
+    expect(location1Checkbox).toBeTruthy()
+    expect(location2Checkbox).toBeTruthy()
+
+    // Click the checkboxes to select them
+    if (location1Checkbox) {
+      fireEvent.click(location1Checkbox)
+    }
+    // Wait a bit for state update
+    await new Promise(resolve => setTimeout(resolve, 50))
+    if (location2Checkbox) {
+      fireEvent.click(location2Checkbox)
+    }
+    // Wait a bit for state update
+    await new Promise(resolve => setTimeout(resolve, 50))
 
     // Fill form and submit
     const titleInput = screen.getByPlaceholderText(/タイトル/i)
@@ -237,12 +265,15 @@ describe('BookForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(createBook).toHaveBeenCalledWith(
-        expect.objectContaining({
-          location_ids: [1, 2],
-        })
-      )
+      expect(createBook).toHaveBeenCalled()
     })
+
+    // Verify location_ids are included in the call
+    const createBookCalls = (createBook as any).mock.calls
+    expect(createBookCalls.length).toBeGreaterThan(0)
+    const lastCall = createBookCalls[createBookCalls.length - 1]
+    expect(lastCall[0]).toHaveProperty('location_ids')
+    expect(lastCall[0].location_ids).toEqual([1, 2])
   })
 
   it('should not display location selection when no locations are available', async () => {
