@@ -84,9 +84,11 @@ describe('BookRegisterPage', () => {
     render(<BookRegisterPage />)
 
     // Wait for locations to load and be displayed
+    // Locations are displayed in the LocationSelection component
     await waitFor(
       () => {
-        expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+        // The location name appears in a label or span within the checkbox label
+        expect(screen.getByLabelText(/自宅本棚/)).toBeInTheDocument()
       },
       { timeout: 3000 }
     )
@@ -99,7 +101,7 @@ describe('BookRegisterPage', () => {
       expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
     })
 
-    // Select location
+    // Select location - use getByLabelText to find the checkbox
     const locationCheckbox = screen.getByLabelText(/自宅本棚/)
     fireEvent.click(locationCheckbox)
 
