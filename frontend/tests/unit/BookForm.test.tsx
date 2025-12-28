@@ -114,5 +114,117 @@ describe('BookForm', () => {
       expect(screen.getByText(/検索に失敗しました/i)).toBeInTheDocument()
     })
   })
+
+  it('should display location selection when locations are available', async () => {
+    const mockLocations = [
+      {
+        id: 1,
+        user_id: defaultUserId,
+        name: '自宅本棚',
+        type: 'Physical' as const,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        user_id: defaultUserId,
+        name: 'Kindle',
+        type: 'Digital' as const,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+    ]
+
+    ;(listLocations as any).mockResolvedValueOnce({ locations: mockLocations })
+
+    render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+      expect(screen.getByText('Kindle')).toBeInTheDocument()
+    })
+  })
+
+  it('should allow selecting multiple locations', async () => {
+    const mockLocations = [
+      {
+        id: 1,
+        user_id: defaultUserId,
+        name: '自宅本棚',
+        type: 'Physical' as const,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        user_id: defaultUserId,
+        name: 'Kindle',
+        type: 'Digital' as const,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+    ]
+
+    const mockBook = createMockBook({ title: 'Test Book' })
+    ;(listLocations as any).mockResolvedValueOnce({ locations: mockLocations })
+    ;(createBook as any).mockResolvedValueOnce(mockBook)
+
+    render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+    })
+
+    // Switch to manual mode
+    const manualTab = screen.getByText(/手動登録/i)
+    fireEvent.click(manualTab)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
+    })
+
+    // Select locations
+    const location1Checkbox = screen.getByLabelText(/自宅本棚/)
+    const location2Checkbox = screen.getByLabelText(/Kindle/)
+
+    fireEvent.click(location1Checkbox)
+    fireEvent.click(location2Checkbox)
+
+    // Fill form and submit
+    const titleInput = screen.getByPlaceholderText(/タイトル/i)
+    fireEvent.change(titleInput, { target: { value: 'Test Book' } })
+
+    const submitButton = await waitFor(() => {
+      const buttons = screen.getAllByRole('button')
+      const submitBtn = buttons.find(btn => btn.textContent === '登録' && !btn.disabled)
+      if (!submitBtn) {
+        throw new Error('Submit button not found or disabled')
+      }
+      return submitBtn
+    })
+
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(createBook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          location_ids: [1, 2],
+        })
+      )
+    })
+  })
+
+  it('should not display location selection when no locations are available', async () => {
+    ;(listLocations as any).mockResolvedValueOnce({ locations: [] })
+
+    render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
+
+    await waitFor(() => {
+      expect(listLocations).toHaveBeenCalledWith(defaultUserId)
+    })
+
+    // Location selection should not be visible
+    expect(screen.queryByText(/所有場所/)).not.toBeInTheDocument()
+  })
 })
 

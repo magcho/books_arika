@@ -572,5 +572,43 @@ describe('DELETE /api/locations/:location_id', () => {
     const response = await handleTestRequest(request, db)
     expect(response.status).toBe(400)
   })
+
+  it('should cascade delete ownerships when location is deleted', async () => {
+    // Setup: Create book, location, and ownership
+    const { BookService } = await import('../../src/services/book_service')
+    const { OwnershipService } = await import('../../src/services/ownership_service')
+    const { LocationService } = await import('../../src/services/location_service')
+    const { createMockBookInput } = await import('../fixtures/books')
+    const { createMockLocationInput } = await import('../fixtures/locations')
+
+    const bookService = new BookService(db)
+    const locationService = new LocationService(db)
+    const ownershipService = new OwnershipService(db)
+
+    const book = await bookService.create(createMockBookInput({ isbn: '9784123456789' }))
+    const location = await locationService.create(createMockLocationInput({ name: '自宅本棚' }))
+
+    // Create ownership
+    const ownership = await ownershipService.create({
+      user_id: 'default-user',
+      isbn: book.isbn,
+      location_id: location.id,
+    })
+
+    // Verify ownership exists
+    const ownershipsBefore = await ownershipService.findByUserId('default-user')
+    expect(ownershipsBefore.length).toBe(1)
+
+    // Delete location
+    const request = new Request(`http://localhost/api/locations/${location.id}?user_id=default-user`, {
+      method: 'DELETE',
+    })
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(204)
+
+    // Verify ownership is cascade deleted
+    const ownershipsAfter = await ownershipService.findByUserId('default-user')
+    expect(ownershipsAfter.length).toBe(0)
+  })
 })
 
