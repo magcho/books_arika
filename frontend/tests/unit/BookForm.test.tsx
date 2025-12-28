@@ -28,11 +28,10 @@ describe('BookForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetFetchMock()
-    // Mock successful location loading by default
-    ;(listLocations as any).mockResolvedValueOnce({ locations: [] })
   })
 
   it('should render book form', () => {
+    ;(listLocations as any).mockResolvedValue({ locations: [] })
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
     expect(screen.getByText(/書籍登録/i)).toBeInTheDocument()
   })
@@ -41,6 +40,7 @@ describe('BookForm', () => {
     const mockResults = {
       items: [createMockBookSearchResult({ title: 'Test Book' })],
     }
+    ;(listLocations as any).mockResolvedValue({ locations: [] })
     ;(searchBooks as any).mockResolvedValueOnce(mockResults)
 
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
@@ -61,6 +61,7 @@ describe('BookForm', () => {
 
   it('should create book when form is submitted', async () => {
     const mockBook = createMockBook({ title: 'Test Book' })
+    ;(listLocations as any).mockResolvedValue({ locations: [] })
     ;(createBook as any).mockResolvedValueOnce(mockBook)
 
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
@@ -97,6 +98,7 @@ describe('BookForm', () => {
   })
 
   it('should show error message when search fails', async () => {
+    ;(listLocations as any).mockResolvedValue({ locations: [] })
     ;(searchBooks as any).mockRejectedValueOnce(new Error('Search failed'))
 
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
@@ -135,9 +137,31 @@ describe('BookForm', () => {
       },
     ]
 
-    ;(listLocations as any).mockResolvedValueOnce({ locations: mockLocations })
+    const mockBook = createMockBookSearchResult({ title: 'Test Book' })
+    ;(listLocations as any).mockResolvedValue({ locations: mockLocations })
+    ;(searchBooks as any).mockResolvedValueOnce({ items: [mockBook] })
 
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
+
+    await waitFor(() => {
+      expect(listLocations).toHaveBeenCalledWith(defaultUserId)
+    })
+
+    // Search for a book to trigger location selection display
+    const searchInput = screen.getByPlaceholderText(/タイトルまたは著者名を入力/i)
+    const searchButton = searchInput.parentElement?.querySelector('button') || screen.getAllByRole('button').find(btn => btn.textContent === '検索' && !btn.disabled)
+    fireEvent.change(searchInput, { target: { value: 'Test Book' } })
+    if (searchButton) {
+      fireEvent.click(searchButton)
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText('Test Book')).toBeInTheDocument()
+    })
+
+    // Select the book to show location selection
+    const bookElement = screen.getByText('Test Book')
+    fireEvent.click(bookElement)
 
     await waitFor(() => {
       expect(screen.getByText('自宅本棚')).toBeInTheDocument()
@@ -166,18 +190,25 @@ describe('BookForm', () => {
     ]
 
     const mockBook = createMockBook({ title: 'Test Book' })
-    ;(listLocations as any).mockResolvedValueOnce({ locations: mockLocations })
+    ;(listLocations as any).mockResolvedValue({ locations: mockLocations })
     ;(createBook as any).mockResolvedValueOnce(mockBook)
 
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
 
+    // Wait for locations to load
     await waitFor(() => {
-      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+      expect(listLocations).toHaveBeenCalledWith(defaultUserId)
     })
 
     // Switch to manual mode
     const manualTab = screen.getByText(/手動登録/i)
     fireEvent.click(manualTab)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
+      expect(screen.getByText('自宅本棚')).toBeInTheDocument()
+      expect(screen.getByText('Kindle')).toBeInTheDocument()
+    })
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/タイトル/i)).toBeInTheDocument()
@@ -215,8 +246,7 @@ describe('BookForm', () => {
   })
 
   it('should not display location selection when no locations are available', async () => {
-    ;(listLocations as any).mockResolvedValueOnce({ locations: [] })
-
+    ;(listLocations as any).mockResolvedValue({ locations: [] })
     render(<BookForm onSuccess={mockOnSuccess} defaultUserId={defaultUserId} />)
 
     await waitFor(() => {

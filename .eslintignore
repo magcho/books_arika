@@ -10,6 +10,11 @@ build/
 coverage/
 .nyc_output/
 
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
 # Config files
 *.config.js
 *.config.ts

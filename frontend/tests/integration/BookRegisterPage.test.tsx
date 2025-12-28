@@ -23,11 +23,10 @@ vi.mock('../../src/services/location_api', () => ({
 describe('BookRegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Mock successful location loading by default
-    vi.mocked(listLocations).mockResolvedValue({ locations: [] })
   })
 
   it('should render book register page', () => {
+    vi.mocked(listLocations).mockResolvedValue({ locations: [] })
     render(<BookRegisterPage />)
     expect(screen.getByText(/書籍登録/i)).toBeInTheDocument()
   })

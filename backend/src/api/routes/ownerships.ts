@@ -149,10 +149,11 @@ ownerships.post('/', async (c) => {
       // The error message from OwnershipService is: "この書籍は既にこの場所に登録されています"
       // Use more flexible matching to handle potential encoding issues
       if (
-        errorMessage.includes('既に') && errorMessage.includes('登録されています') ||
+        (errorMessage.includes('既に') && errorMessage.includes('登録されています')) ||
         errorMessage.includes('UNIQUE constraint') ||
         errorMessage.includes('UNIQUE constraint failed') ||
-        errorMessage.toLowerCase().includes('unique')
+        /UNIQUE.*constraint/i.test(errorMessage) ||
+        /duplicate.*key/i.test(errorMessage)
       ) {
         throw new HTTPException(409, {
           message: JSON.stringify({

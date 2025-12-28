@@ -15,6 +15,10 @@ pnpm-lock.yaml
 coverage/
 .nyc_output/
 
+# Config files
+*.config.js
+*.config.ts
+
 # Generated files
 *.min.js
 *.min.css

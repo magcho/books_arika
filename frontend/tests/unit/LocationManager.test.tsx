@@ -154,7 +154,11 @@ describe('LocationManager', () => {
     fireEvent.click(saveButton)
 
     await waitFor(() => {
-      expect(locationApi.updateLocation).toHaveBeenCalledWith(1, { name: '書斎本棚' }, mockUserId)
+      expect(locationApi.updateLocation).toHaveBeenCalledWith(
+        1,
+        { name: '書斎本棚', type: 'Physical' },
+        mockUserId
+      )
     })
   })
 
@@ -219,7 +223,7 @@ describe('LocationManager', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/作成エラー:/)).toBeInTheDocument()
+      expect(screen.getByText('場所の作成に失敗しました')).toBeInTheDocument()
     })
   })
 
