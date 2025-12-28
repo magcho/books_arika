@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { fn } from '@storybook/test'
 import { BarcodeScanner } from './BarcodeScanner'
+import { mockCameraAPI } from '../__mocks__/camera'
 
 const meta: Meta<typeof BarcodeScanner> = {
   title: 'Components/BarcodeScanner',
@@ -28,9 +29,13 @@ export const Scanning: Story = {
     onError: fn(),
     onClose: fn(),
   },
-  parameters: {
-    // カメラAPIをモックする設定は後で追加
-  },
+  decorators: [
+    (Story) => {
+      // カメラAPIをモック
+      mockCameraAPI()
+      return <Story />
+    },
+  ],
 }
 
 export const ManualInput: Story = {

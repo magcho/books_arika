@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react'
+import type { Preview, Decorator } from '@storybook/react'
 import React from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
@@ -31,7 +31,7 @@ const preview: Preview = {
         <Story />
       </MemoryRouter>
     ),
-  ],
+  ] as Decorator[],
 }
 
 export default preview

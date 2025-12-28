@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { execSync } from 'child_process'
+import { readFileSync } from 'fs'
 import { existsSync } from 'fs'
 import { join } from 'path'
 
@@ -8,13 +8,18 @@ describe('Storybook Startup', () => {
     const packageJsonPath = join(process.cwd(), 'package.json')
     expect(existsSync(packageJsonPath)).toBe(true)
     
-    const packageJson = JSON.parse(execSync('cat package.json', { encoding: 'utf-8' }))
+    const packageJson = JSON.parse(
+      readFileSync(packageJsonPath, 'utf-8')
+    )
     expect(packageJson.scripts).toHaveProperty('storybook')
     expect(packageJson.scripts.storybook).toContain('storybook dev')
   })
 
   it('should have build-storybook script in package.json', () => {
-    const packageJson = JSON.parse(execSync('cat package.json', { encoding: 'utf-8' }))
+    const packageJsonPath = join(process.cwd(), 'package.json')
+    const packageJson = JSON.parse(
+      readFileSync(packageJsonPath, 'utf-8')
+    )
     expect(packageJson.scripts).toHaveProperty('build-storybook')
     expect(packageJson.scripts['build-storybook']).toContain('storybook build')
   })

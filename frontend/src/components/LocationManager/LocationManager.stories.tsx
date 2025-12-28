@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { fn } from '@storybook/test'
+import { http, HttpResponse, delay } from 'msw'
 import { LocationManager } from './LocationManager'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'
 
 const meta: Meta<typeof LocationManager> = {
   title: 'Components/LocationManager',
@@ -40,6 +43,9 @@ export const Empty: Story = {
     msw: {
       handlers: [
         // 空のレスポンスを返す
+        http.get(`${API_URL}/locations`, () => {
+          return HttpResponse.json({ locations: [] })
+        }),
       ],
     },
   },
@@ -50,6 +56,7 @@ export const WithLocations: Story = {
     userId: 'user-1',
     onLocationChange: fn(),
   },
+  // グローバルMSWハンドラー（handlers.ts）で場所データが返される
 }
 
 export const Loading: Story = {
@@ -61,6 +68,10 @@ export const Loading: Story = {
     msw: {
       handlers: [
         // 遅延レスポンスをシミュレート
+        http.get(`${API_URL}/locations`, async () => {
+          await delay('infinite')
+          return HttpResponse.json({ locations: [] })
+        }),
       ],
     },
   },
@@ -71,6 +82,7 @@ export const Editing: Story = {
     userId: 'user-1',
     onLocationChange: fn(),
   },
+  // 編集モードを表示（場所が存在する状態で編集ボタンをクリックした状態）
 }
 
 export const Error: Story = {
@@ -81,7 +93,31 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        // エラーレスポンスをシミュレート
+        // エラーレスポンスを返す
+        http.get(`${API_URL}/locations`, () => {
+          return HttpResponse.json(
+            { message: '場所の取得に失敗しました' },
+            { status: 500 }
+          )
+        }),
+        http.post(`${API_URL}/locations`, () => {
+          return HttpResponse.json(
+            { message: '場所の作成に失敗しました' },
+            { status: 500 }
+          )
+        }),
+        http.put(`${API_URL}/locations/:id`, () => {
+          return HttpResponse.json(
+            { message: '場所の更新に失敗しました' },
+            { status: 500 }
+          )
+        }),
+        http.delete(`${API_URL}/locations/:id`, () => {
+          return HttpResponse.json(
+            { message: '場所の削除に失敗しました' },
+            { status: 500 }
+          )
+        }),
       ],
     },
   },

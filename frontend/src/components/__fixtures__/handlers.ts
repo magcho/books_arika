@@ -3,7 +3,12 @@ import { http, HttpResponse } from 'msw'
 import { mockBooks } from './books'
 import { mockLocations } from './locations'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'
+// Storybook環境でも動作するように、環境変数またはデフォルト値を使用
+// Storybookではimport.meta.envが正しく動作しない場合があるため、フォールバックを提供
+const API_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+  process.env.STORYBOOK_API_URL ||
+  'http://localhost:8787/api'
 
 export const handlers = [
   // Book search

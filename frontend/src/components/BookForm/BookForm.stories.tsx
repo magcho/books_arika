@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { fn } from '@storybook/test'
+import { http, HttpResponse, delay } from 'msw'
 import { BookForm } from './BookForm'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787/api'
 
 const meta: Meta<typeof BookForm> = {
   title: 'Components/BookForm',
@@ -36,13 +39,8 @@ export const SearchResults: Story = {
     onSuccess: fn(),
     defaultUserId: 'user-1',
   },
-  parameters: {
-    msw: {
-      handlers: [
-        // MSWハンドラーはグローバル設定で既に設定済み
-      ],
-    },
-  },
+  // グローバルMSWハンドラー（handlers.ts）で検索結果が返される
+  // 検索を実行すると、モックデータが表示されます
 }
 
 export const BookSelected: Story = {
@@ -50,6 +48,7 @@ export const BookSelected: Story = {
     onSuccess: fn(),
     defaultUserId: 'user-1',
   },
+  // 書籍選択状態を表示（検索後に書籍を選択した状態）
 }
 
 export const ManualMode: Story = {
@@ -57,6 +56,7 @@ export const ManualMode: Story = {
     onSuccess: fn(),
     defaultUserId: 'user-1',
   },
+  // 手動登録モードを表示
 }
 
 export const Loading: Story = {
@@ -67,7 +67,15 @@ export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
-        // 遅延レスポンスをシミュレート
+        // 検索APIを遅延させてローディング状態をシミュレート
+        http.get(`${API_URL}/search/books`, async () => {
+          await delay('infinite')
+          return HttpResponse.json({ items: [] })
+        }),
+        http.post(`${API_URL}/search/barcode`, async () => {
+          await delay('infinite')
+          return HttpResponse.json({})
+        }),
       ],
     },
   },
@@ -81,7 +89,25 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        // エラーレスポンスをシミュレート
+        // 検索APIでエラーを返す
+        http.get(`${API_URL}/search/books`, () => {
+          return HttpResponse.json(
+            { message: '検索に失敗しました' },
+            { status: 500 }
+          )
+        }),
+        http.post(`${API_URL}/search/barcode`, () => {
+          return HttpResponse.json(
+            { message: 'バーコード検索に失敗しました' },
+            { status: 500 }
+          )
+        }),
+        http.post(`${API_URL}/books`, () => {
+          return HttpResponse.json(
+            { message: '書籍の登録に失敗しました' },
+            { status: 500 }
+          )
+        }),
       ],
     },
   },
