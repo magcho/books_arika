@@ -204,22 +204,22 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T108 [P] Add React Router configuration in frontend/src/App.tsx (routes for BookListPage, BookRegisterPage, LocationManagePage)
-- [ ] T109 [P] Create navigation component in frontend/src/components/Navigation/Navigation.tsx (page navigation)
-- [ ] T110 [P] Add global error boundary component in frontend/src/components/ErrorBoundary/ErrorBoundary.tsx
-- [ ] T111 Add request logging middleware in backend/src/api/middleware/logger.ts
-- [ ] T112 Add rate limiting middleware in backend/src/api/middleware/rate_limit.ts
-- [ ] T113 [P] Add input sanitization for all user inputs in backend/src/api/middleware/validation.ts
+- [x] T108 [P] Add React Router configuration in frontend/src/App.tsx (routes for BookListPage, BookRegisterPage, LocationManagePage)
+- [x] T109 [P] Create navigation component in frontend/src/components/Navigation/Navigation.tsx (page navigation)
+- [x] T110 [P] Add global error boundary component in frontend/src/components/ErrorBoundary/ErrorBoundary.tsx
+- [x] T111 Add request logging middleware in backend/src/api/middleware/logger.ts
+- [x] T112 Add rate limiting middleware in backend/src/api/middleware/rate_limit.ts
+- [x] T113 [P] Add input sanitization for all user inputs in backend/src/api/middleware/validation.ts
 - [ ] T114 [P] Optimize database queries with proper joins for book list with locations in backend/src/services/book_service.ts
-- [ ] T121 [P] Add loading states (skeleton UI, spinners) to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: loading states for all user stories)
-- [ ] T122 [P] Add empty states with actionable messages to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: empty states for all user stories, e.g., "書籍が登録されていません" with registration button)
-- [ ] T114 [P] Add pagination support for book list API in backend/src/api/routes/books.ts
-- [ ] T115 [P] Add client-side caching for search results in frontend/src/services/book_api.ts
-- [ ] T116 Code cleanup and refactoring across all components
-- [ ] T117 Performance optimization (lazy loading, code splitting) in frontend/vite.config.ts
-- [ ] T118 Security hardening (CORS, input validation review) in backend/src/api/middleware/
-- [ ] T119 Run quickstart.md validation and update if needed
-- [ ] T120 Create README.md with setup and deployment instructions
+- [x] T121 [P] Add loading states (skeleton UI, spinners) to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: loading states for all user stories)
+- [x] T122 [P] Add empty states with actionable messages to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: empty states for all user stories, e.g., "書籍が登録されていません" with registration button)
+- [ ] T115 [P] Add pagination support for book list API in backend/src/api/routes/books.ts
+- [ ] T116 [P] Add client-side caching for search results in frontend/src/services/book_api.ts
+- [ ] T117 Code cleanup and refactoring across all components
+- [ ] T118 Performance optimization (lazy loading, code splitting) in frontend/vite.config.ts
+- [ ] T119 Security hardening (CORS, input validation review) in backend/src/api/middleware/
+- [ ] T120 Run quickstart.md validation and update if needed
+- [ ] T123 Create README.md with setup and deployment instructions
 
 ---
 

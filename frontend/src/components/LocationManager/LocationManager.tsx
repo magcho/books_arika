@@ -160,8 +160,17 @@ export function LocationManager({ userId, onLocationChange }: LocationManagerPro
       {/* Location List */}
       <div>
         <h3>登録済みの場所</h3>
-        {locations.length === 0 ? (
-          <p>場所が登録されていません</p>
+        {isLoading ? (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <div className="loading">読み込み中...</div>
+          </div>
+        ) : locations.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center' }} role="status">
+            <p>場所が登録されていません</p>
+            <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              上記のフォームから場所を追加してください
+            </p>
+          </div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {locations.map((location) => (

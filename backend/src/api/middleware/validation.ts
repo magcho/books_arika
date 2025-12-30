@@ -118,3 +118,60 @@ export function throwValidationError(errors: ValidationError[]): never {
   })
 }
 
+/**
+ * Sanitize string input by removing potentially dangerous characters
+ * Removes null bytes, control characters, and normalizes whitespace
+ */
+export function sanitizeString(input: string | undefined | null): string {
+  if (!input) {
+    return ''
+  }
+
+  return input
+    .replace(/\0/g, '') // Remove null bytes
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters (except newline, tab)
+    .replace(/\r\n/g, '\n') // Normalize line endings
+    .trim()
+}
+
+/**
+ * Sanitize HTML input by escaping HTML entities
+ * Basic XSS prevention
+ */
+export function sanitizeHTML(input: string | undefined | null): string {
+  if (!input) {
+    return ''
+  }
+
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+}
+
+/**
+ * Sanitize object recursively
+ * Applies sanitization to all string values in an object
+ */
+export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
+  const sanitized = { ...obj }
+
+  for (const key in sanitized) {
+    const value = sanitized[key]
+    if (typeof value === 'string') {
+      sanitized[key] = sanitizeString(value) as T[Extract<keyof T, string>]
+    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      sanitized[key] = sanitizeObject(value as Record<string, unknown>) as T[Extract<keyof T, string>]
+    } else if (Array.isArray(value)) {
+      sanitized[key] = value.map((item) =>
+        typeof item === 'string' ? sanitizeString(item) : item
+      ) as T[Extract<keyof T, string>]
+    }
+  }
+
+  return sanitized
+}
+

@@ -65,8 +65,32 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
 
   // Location selection UI component
   const LocationSelection = () => {
+    if (isLoadingLocations) {
+      return (
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+            所有場所（複数選択可）:
+          </label>
+          <div style={{ padding: '1rem', textAlign: 'center' }}>
+            <div className="loading">場所を読み込み中...</div>
+          </div>
+        </div>
+      )
+    }
+
     if (locations.length === 0) {
-      return null
+      return (
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+            所有場所（複数選択可）:
+          </label>
+          <div style={{ padding: '1rem', textAlign: 'center' }} role="status">
+            <p style={{ color: '#666', fontSize: '0.9rem' }}>
+              場所が登録されていません。場所管理ページから場所を追加してください。
+            </p>
+          </div>
+        </div>
+      )
     }
 
     return (
@@ -313,7 +337,11 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
             </button>
           </div>
 
-          {searchResults.length > 0 && (
+          {isSearching ? (
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <div className="loading">検索中...</div>
+            </div>
+          ) : searchResults.length > 0 ? (
             <div style={{ marginBottom: '1rem' }}>
               <h3>検索結果</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -346,7 +374,14 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
                 ))}
               </div>
             </div>
-          )}
+          ) : searchQuery.trim() !== '' ? (
+            <div style={{ padding: '2rem', textAlign: 'center' }} role="status">
+              <p>検索結果が見つかりませんでした</p>
+              <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                別のキーワードで検索するか、手動登録を試してください
+              </p>
+            </div>
+          ) : null}
 
           {/* Location selection */}
           {selectedBook && (

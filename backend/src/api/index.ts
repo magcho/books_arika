@@ -8,6 +8,7 @@ import { HTTPException } from 'hono/http-exception'
 import { cors } from './middleware/cors'
 import { errorHandler } from './middleware/error'
 import { logger } from './middleware/logger'
+import { rateLimit } from './middleware/rate_limit'
 import { locationsRoutes } from './routes/locations'
 import { ownershipsRoutes } from './routes/ownerships'
 
@@ -15,6 +16,7 @@ const app = new Hono()
 
 // Global middleware (error handler must be last)
 app.use('*', logger)
+app.use('*', rateLimit)
 app.use('*', cors)
 
 // Health check endpoint
