@@ -20,7 +20,7 @@
 1. **Given** ユーザーが書籍登録画面を開いている, **When** タイトルまたは著者名を入力して検索ボタンを押す, **Then** Google Books APIから候補書籍が表示され、選択して登録できる
 2. **Given** ユーザーが書籍登録画面を開いている, **When** カメラでISBNバーコードをスキャンする, **Then** バーコードから書籍情報が取得され、確認後に登録できる
 3. **Given** ユーザーが書籍登録画面を開いている, **When** 手動登録を選択し、タイトルを入力して登録する, **Then** タイトルのみで書籍が登録され、一覧に表示される
-4. **Given** ユーザーが既に登録済みの書籍を再度登録しようとしている, **When** 同じISBNまたはタイトルで登録を試みる, **Then** システムは重複を検出し、適切に処理する（既存登録の更新または重複登録の防止）
+4. **Given** ユーザーが既に登録済みの書籍を再度登録しようとしている, **When** 同じISBNまたはタイトルで登録を試みる, **Then** システムは重複を検出し、ユーザーに「既存登録を更新」または「新規登録として扱う」の選択肢を提示する
 
 ---
 
@@ -62,10 +62,20 @@
 
 - バーコードスキャン時に、無効なISBNまたは認識できないバーコードが読み取られた場合、適切なエラーメッセージを表示し、手動登録への誘導を提供する
 - Google Books APIが利用できない、またはタイムアウトした場合、エラーメッセージを表示し、手動登録へのフォールバックを提供する
-- 同じ書籍を複数の方法（検索、バーコード、手動）で登録しようとした場合、重複を検出し、既存登録を更新するか、新規登録として扱うかを明確にする
-- 場所マスタが1つも作成されていない状態で書籍を登録しようとした場合、場所選択をスキップできるか、または場所作成を促す
+- 同じ書籍を複数の方法（検索、バーコード、手動）で登録しようとした場合、重複を検出し、ユーザーに「既存登録を更新」または「新規登録として扱う」の選択肢を提示する。ユーザーが「既存登録を更新」を選択した場合、書籍情報を更新し、新しい場所があれば所有情報として追加する。「新規登録として扱う」を選択した場合、重複検出を無視して新規登録を実行する（ISBNがNULLの書籍の場合のみ可能）
+- システム初期化時またはユーザー初回利用時に、デフォルト場所「本棚」（type: Physical）を自動作成する。このデフォルト場所は編集可能（名前変更、削除可能）である
 - 検索時に特殊文字や絵文字が含まれるタイトルで検索した場合、適切に処理される
 - 大量の書籍（1000冊以上）が登録されている場合でも、一覧表示と検索が高速に動作する
+
+## Clarifications
+
+### Session 2025-12-22
+
+- Q: MVPでの認証・認可の扱い → A: 認証不要（固定ユーザーID "default-user" を使用、すべてのAPIリクエストでuser_idをクエリパラメータで受け取る）
+- Q: エラーメッセージとユーザー向けメッセージの言語 → A: すべて日本語（エラーメッセージ、成功メッセージ、UIラベル、すべて日本語で統一）
+- Q: 場所マスタ未作成時の書籍登録の扱い → A: デフォルトで「本棚」という編集可能な"場所"を作成しておく
+- Q: 重複書籍登録時の動作 → A: ユーザーに選択させる（重複検出時に「既存登録を更新」または「新規登録として扱う」を選択可能）
+- Q: ローディング状態と空状態のUX詳細 → A: 基本的なローディング/空状態を実装（スケルトンUIやスピナー、明確なメッセージ、空状態では「書籍が登録されていません」などのメッセージと登録ボタンを表示）
 
 ## Requirements *(mandatory)*
 
@@ -75,12 +85,21 @@
 - **FR-002**: System MUST allow users to scan ISBN barcodes using device camera and register books based on scanned information
 - **FR-003**: System MUST allow users to manually register books with at least a title field (for books without ISBN or API availability)
 - **FR-004**: System MUST allow users to create, read, update, and delete location master data (places where books are stored)
+- **FR-011**: System MUST automatically create a default location named "本棚" (type: Physical) for each user upon system initialization or first use. This default location MUST be editable (name changeable, deletable) by the user.
 - **FR-005**: System MUST allow users to associate multiple locations with a single book (e.g., both physical shelf and digital platform)
 - **FR-006**: System MUST display a list of all registered books with basic information (title, author, associated locations)
 - **FR-007**: System MUST provide keyword search functionality to filter registered books by title or author name
-- **FR-008**: System MUST detect and handle duplicate book registrations (same ISBN or identical title/author combination)
+- **FR-008**: System MUST detect duplicate book registrations (same ISBN or identical title/author combination) and present the user with a choice: "既存登録を更新" (update existing registration) or "新規登録として扱う" (treat as new registration). When "既存登録を更新" is selected, the system MUST update the book information and add new locations as ownership records if provided. When "新規登録として扱う" is selected, the system MUST proceed with registration ignoring the duplicate detection (only possible for books without ISBN).
 - **FR-009**: System MUST store book metadata including title, author, ISBN (when available), thumbnail URL, and doujin flag
 - **FR-010**: System MUST support future multi-user expansion by maintaining user_id in data structure, even for single-user MVP phase
+
+### Non-Functional Requirements
+
+- **NFR-001**: System MUST operate without authentication in MVP phase. All API requests MUST accept `user_id` as a query parameter or request body field, using fixed value "default-user" for single-user MVP.
+- **NFR-002**: System MUST validate that all user-scoped operations (locations, ownerships) are filtered by the provided `user_id` to ensure data isolation, even in single-user mode.
+- **NFR-003**: System MUST be designed to allow seamless addition of authentication layer in future phases without requiring data migration or API contract changes.
+- **NFR-004**: System MUST display all user-facing messages (error messages, success messages, UI labels, validation messages) in Japanese. Backend and frontend MUST use consistent Japanese error messages per Constitution Principle VII.
+- **NFR-005**: System MUST provide appropriate loading states (skeleton UI, spinners, or loading indicators) during API calls and data fetching operations. System MUST display clear empty states with actionable messages (e.g., "書籍が登録されていません" with a registration button) when no data is available.
 
 ### Key Entities *(include if feature involves data)*
 

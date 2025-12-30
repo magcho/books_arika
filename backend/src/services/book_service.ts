@@ -146,5 +146,31 @@ export class BookService {
       is_doujin: Boolean(book.is_doujin),
     }))
   }
+
+  /**
+   * Search books by title or author
+   * Supports partial matching for both title and author
+   */
+  async search(query: string): Promise<Book[]> {
+    if (!query || query.trim() === '') {
+      // Empty query returns all books (same as listAll)
+      return this.listAll()
+    }
+
+    const searchTerm = `%${query.trim()}%`
+    const result = await this.db
+      .prepare(
+        `SELECT * FROM books 
+         WHERE title LIKE ? OR author LIKE ?
+         ORDER BY created_at DESC`
+      )
+      .bind(searchTerm, searchTerm)
+      .all<Book>()
+
+    return result.results.map((book) => ({
+      ...book,
+      is_doujin: Boolean(book.is_doujin),
+    }))
+  }
 }
 

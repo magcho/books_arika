@@ -242,6 +242,7 @@ CREATE INDEX idx_ownerships_location_id ON ownerships(location_id);
 - MVPフェーズでは1ユーザーのみ使用
 - デフォルトユーザーIDを固定値（例: "default-user"）として使用
 - 将来の認証システム導入時にスムーズに移行可能な設計
+- システム初期化時またはユーザー初回利用時に、デフォルト場所「本棚」（type: Physical）を自動作成（FR-011）。このデフォルト場所は編集可能（名前変更、削除可能）
 
 ### Data Migration Strategy
 
