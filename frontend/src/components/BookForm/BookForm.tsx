@@ -328,7 +328,7 @@ export function BookForm({ onSuccess, defaultUserId }: BookFormProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="タイトルまたは著者名を入力"
               style={{ flex: 1, padding: '0.5rem' }}
             />

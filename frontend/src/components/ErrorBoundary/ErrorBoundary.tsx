@@ -77,6 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 }}
               >
                 {this.state.error.toString()}
+                {'\n'}
                 {this.state.error.stack}
               </pre>
             </details>

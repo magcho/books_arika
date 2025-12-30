@@ -20,6 +20,7 @@ export function Navigation() {
 
   return (
     <nav
+      aria-label="メインナビゲーション"
       style={{
         backgroundColor: '#fff',
         padding: '1rem',

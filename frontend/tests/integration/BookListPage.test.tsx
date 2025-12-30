@@ -127,14 +127,13 @@ describe('BookListPage', () => {
     })
 
     const bookItem = screen.getByText('Book 1').closest('.book-item')
-    if (bookItem) {
-      fireEvent.click(bookItem)
+    expect(bookItem).not.toBeNull()
+    fireEvent.click(bookItem!)
 
-      await waitFor(() => {
-        expect(screen.getByText(/著者: Author 1/)).toBeInTheDocument()
-        expect(screen.getByText('所有場所:')).toBeInTheDocument()
-      })
-    }
+    await waitFor(() => {
+      expect(screen.getByText(/著者: Author 1/)).toBeInTheDocument()
+      expect(screen.getByText('所有場所:')).toBeInTheDocument()
+    })
   })
 
   it('should close book detail when close button is clicked', async () => {

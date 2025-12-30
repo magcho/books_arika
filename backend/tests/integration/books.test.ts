@@ -5,7 +5,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import type { D1Database } from '@cloudflare/workers-types'
 import { handleTestRequest } from '../helpers/app'
-import { getTestDatabase, setupTestDatabase, cleanupTestDatabase } from '../helpers/db'
+import {
+  getTestDatabase,
+  setupTestDatabase,
+  cleanupTestDatabase,
+  createTestUser,
+  createTestLocation,
+} from '../helpers/db'
 
 describe('POST /api/books', () => {
   let db: D1Database
@@ -308,7 +314,6 @@ describe('GET /api/books/{isbn}', () => {
 
   it('should get book detail with locations', async () => {
     // Create user and location first
-    const { createTestUser, createTestLocation } = await import('../helpers/db')
     await createTestUser(db, 'default-user', 'Test User')
     const location = await createTestLocation(db, 'default-user', '本棚', 'Physical')
 

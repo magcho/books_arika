@@ -15,6 +15,12 @@ function App() {
             <Route path="/" element={<BookListPage />} />
             <Route path="/register" element={<BookRegisterPage />} />
             <Route path="/locations" element={<LocationManagePage />} />
+            <Route
+              path="*"
+              element={
+                <div style={{ textAlign: 'center', padding: '2rem' }}>ページが見つかりません</div>
+              }
+            />
           </Routes>
         </div>
       </ErrorBoundary>

@@ -66,8 +66,11 @@ export async function rateLimit(c: Context, next: Next) {
   const now = Date.now()
 
   // Clean up expired entries (simple cleanup, can be optimized)
-  if (Object.keys(store).length > 1000) {
-    // Only cleanup if store is getting large
+  // Threshold of 1000 entries chosen to balance memory usage and cleanup overhead
+  // In production with Cloudflare KV, this cleanup is not needed
+  const CLEANUP_THRESHOLD = 1000
+  if (Object.keys(store).length > CLEANUP_THRESHOLD) {
+    // Only cleanup if store is getting large to avoid unnecessary iterations
     for (const key in store) {
       if (store[key].resetAt < now) {
         delete store[key]

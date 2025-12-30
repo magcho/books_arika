@@ -157,12 +157,18 @@ export class BookService {
       return this.listAll()
     }
 
-    const searchTerm = `%${query.trim()}%`
+    // Escape SQL LIKE special characters (%, _) to prevent unexpected matches
+    const escapedQuery = query.trim().replace(/[%_]/g, '\\$&')
+    const searchTerm = `%${escapedQuery}%`
+    
+    // Limit results to 100 for performance (adjust based on requirements)
+    // Ensure indexes exist on title and author columns for optimal performance
     const result = await this.db
       .prepare(
         `SELECT * FROM books 
-         WHERE title LIKE ? OR author LIKE ?
-         ORDER BY created_at DESC`
+         WHERE title LIKE ? ESCAPE '\\' OR author LIKE ? ESCAPE '\\'
+         ORDER BY created_at DESC
+         LIMIT 100`
       )
       .bind(searchTerm, searchTerm)
       .all<Book>()
