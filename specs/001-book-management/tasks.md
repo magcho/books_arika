@@ -136,7 +136,7 @@
 ### Implementation for User Story 2
 
 - [x] T066 [P] [US2] Create Location model in backend/src/models/location.ts
-- [ ] T067 [US2] Create initialization service to automatically create default location "本棚" (type: Physical) for each user upon system initialization or first use in backend/src/services/initialization_service.ts (FR-011: default location auto-creation, editable and deletable)
+- [x] T067 [US2] Create initialization service to automatically create default location "本棚" (type: Physical) for each user upon system initialization or first use in backend/src/services/initialization_service.ts (FR-011: default location auto-creation, editable and deletable)
 - [x] T068 [P] [US2] Create Ownership model in backend/src/models/ownership.ts
 - [x] T069 [US2] Create LocationService in backend/src/services/location_service.ts (CRUD operations)
 - [x] T070 [US2] Create OwnershipService in backend/src/services/ownership_service.ts (create, find, delete operations)

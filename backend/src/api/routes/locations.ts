@@ -7,6 +7,7 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import type { Env } from '../../types/db'
 import { LocationService } from '../../services/location_service'
+import { InitializationService } from '../../services/initialization_service'
 import { validateRequired, validateLength, throwValidationError } from '../middleware/validation'
 import type { LocationCreateRequest, LocationUpdateRequest } from '../../types'
 import { isValidLocationType } from '../../models/location'
@@ -25,6 +26,7 @@ const locations = new Hono<{ Bindings: Env }>()
 /**
  * GET /api/locations
  * List all locations for a user
+ * FR-011: Automatically creates default location "本棚" if it doesn't exist (first use)
  */
 locations.get('/', async (c) => {
   const db = c.env.DB
@@ -40,8 +42,13 @@ locations.get('/', async (c) => {
   }
 
   const locationService = new LocationService(db)
+  const initializationService = new InitializationService(db)
 
   try {
+    // FR-011: Ensure default location exists for user (first use initialization)
+    await initializationService.ensureDefaultLocation(user_id)
+
+    // Get all locations for the user
     const locations = await locationService.findByUserId(user_id)
     return c.json({ locations })
   } catch (error) {
