@@ -43,7 +43,7 @@ describe('GET /api/locations', () => {
     })
     await handleTestRequest(createRequest2, db)
 
-    // List locations
+    // List locations (FR-011: default location "本棚" is also auto-created)
     const request = new Request('http://localhost/api/locations?user_id=default-user', {
       method: 'GET',
     })
@@ -52,7 +52,9 @@ describe('GET /api/locations', () => {
     expect(response.status).toBe(200)
     const data = await response.json()
     expect(data.locations).toBeDefined()
-    expect(data.locations.length).toBe(2)
+    // Should have 3 locations: default "本棚" + "自宅本棚" + "Kindle"
+    expect(data.locations.length).toBe(3)
+    expect(data.locations.map((l: { name: string }) => l.name)).toContain('本棚')
     expect(data.locations.map((l: { name: string }) => l.name)).toContain('自宅本棚')
     expect(data.locations.map((l: { name: string }) => l.name)).toContain('Kindle')
   })
@@ -66,7 +68,7 @@ describe('GET /api/locations', () => {
     expect(response.status).toBe(400)
   })
 
-  it('should return empty array when user has no locations', async () => {
+  it('should automatically create default location "本棚" when user has no locations (FR-011)', async () => {
     const request = new Request('http://localhost/api/locations?user_id=default-user', {
       method: 'GET',
     })
@@ -74,7 +76,34 @@ describe('GET /api/locations', () => {
     const response = await handleTestRequest(request, db)
     expect(response.status).toBe(200)
     const data = await response.json()
-    expect(data.locations).toEqual([])
+    expect(data.locations).toBeDefined()
+    expect(data.locations.length).toBe(1)
+    expect(data.locations[0].name).toBe('本棚')
+    expect(data.locations[0].type).toBe('Physical')
+    expect(data.locations[0].user_id).toBe('default-user')
+  })
+
+  it('should not create duplicate default location if it already exists (FR-011 idempotency)', async () => {
+    // First call - creates default location
+    const request1 = new Request('http://localhost/api/locations?user_id=default-user', {
+      method: 'GET',
+    })
+    const response1 = await handleTestRequest(request1, db)
+    expect(response1.status).toBe(200)
+    const data1 = await response1.json()
+    expect(data1.locations.length).toBe(1)
+    const defaultLocationId = data1.locations[0].id
+
+    // Second call - should return existing default location, not create duplicate
+    const request2 = new Request('http://localhost/api/locations?user_id=default-user', {
+      method: 'GET',
+    })
+    const response2 = await handleTestRequest(request2, db)
+    expect(response2.status).toBe(200)
+    const data2 = await response2.json()
+    expect(data2.locations.length).toBe(1)
+    expect(data2.locations[0].id).toBe(defaultLocationId)
+    expect(data2.locations[0].name).toBe('本棚')
   })
 })
 
