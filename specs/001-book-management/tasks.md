@@ -135,26 +135,26 @@
 
 ### Implementation for User Story 2
 
-- [ ] T066a [US2] Create initialization service to automatically create default location "本棚" (type: Physical) for each user upon system initialization or first use in backend/src/services/initialization_service.ts (FR-011: default location auto-creation, editable and deletable)
 - [x] T066 [P] [US2] Create Location model in backend/src/models/location.ts
-- [x] T067 [P] [US2] Create Ownership model in backend/src/models/ownership.ts
-- [x] T068 [US2] Create LocationService in backend/src/services/location_service.ts (CRUD operations)
-- [x] T069 [US2] Create OwnershipService in backend/src/services/ownership_service.ts (create, find, delete operations)
-- [x] T070 [US2] Implement GET /api/locations endpoint in backend/src/api/routes/locations.ts (list user locations)
-- [x] T071 [US2] Implement POST /api/locations endpoint in backend/src/api/routes/locations.ts (create location)
-- [x] T072 [US2] Implement PUT /api/locations/{location_id} endpoint in backend/src/api/routes/locations.ts (update location)
-- [x] T073 [US2] Implement DELETE /api/locations/{location_id} endpoint in backend/src/api/routes/locations.ts (delete location)
-- [x] T074 [US2] Implement GET /api/ownerships endpoint in backend/src/api/routes/ownerships.ts (list ownerships)
-- [x] T075 [US2] Implement POST /api/ownerships endpoint in backend/src/api/routes/ownerships.ts (create ownership)
-- [x] T076 [US2] Implement DELETE /api/ownerships/{ownership_id} endpoint in backend/src/api/routes/ownerships.ts (delete ownership)
-- [x] T077 [US2] Update POST /api/books endpoint to accept location_ids array and create ownerships in backend/src/api/routes/books.ts
-- [x] T078 [US2] Add location validation (user_id ownership check) in backend/src/services/ownership_service.ts
-- [x] T079 [US2] Create LocationManager component in frontend/src/components/LocationManager/LocationManager.tsx (CRUD UI)
-- [x] T080 [US2] Create LocationManagePage in frontend/src/pages/LocationManagePage.tsx (location management UI)
-- [x] T081 [US2] Create location API service in frontend/src/services/location_api.ts (locations CRUD)
-- [x] T082 [US2] Create ownership API service in frontend/src/services/ownership_api.ts (ownerships CRUD)
-- [x] T083 [US2] Update BookForm component to include location selection in frontend/src/components/BookForm/BookForm.tsx
-- [x] T084 [US2] Add multiple location selection UI in frontend/src/components/BookForm/BookForm.tsx
+- [ ] T067 [US2] Create initialization service to automatically create default location "本棚" (type: Physical) for each user upon system initialization or first use in backend/src/services/initialization_service.ts (FR-011: default location auto-creation, editable and deletable)
+- [x] T068 [P] [US2] Create Ownership model in backend/src/models/ownership.ts
+- [x] T069 [US2] Create LocationService in backend/src/services/location_service.ts (CRUD operations)
+- [x] T070 [US2] Create OwnershipService in backend/src/services/ownership_service.ts (create, find, delete operations)
+- [x] T071 [US2] Implement GET /api/locations endpoint in backend/src/api/routes/locations.ts (list user locations)
+- [x] T072 [US2] Implement POST /api/locations endpoint in backend/src/api/routes/locations.ts (create location)
+- [x] T073 [US2] Implement PUT /api/locations/{location_id} endpoint in backend/src/api/routes/locations.ts (update location)
+- [x] T074 [US2] Implement DELETE /api/locations/{location_id} endpoint in backend/src/api/routes/locations.ts (delete location)
+- [x] T075 [US2] Implement GET /api/ownerships endpoint in backend/src/api/routes/ownerships.ts (list ownerships)
+- [x] T076 [US2] Implement POST /api/ownerships endpoint in backend/src/api/routes/ownerships.ts (create ownership)
+- [x] T077 [US2] Implement DELETE /api/ownerships/{ownership_id} endpoint in backend/src/api/routes/ownerships.ts (delete ownership)
+- [x] T078 [US2] Update POST /api/books endpoint to accept location_ids array and create ownerships in backend/src/api/routes/books.ts
+- [x] T079 [US2] Add location validation (user_id ownership check) in backend/src/services/ownership_service.ts
+- [x] T080 [US2] Create LocationManager component in frontend/src/components/LocationManager/LocationManager.tsx (CRUD UI)
+- [x] T081 [US2] Create LocationManagePage in frontend/src/pages/LocationManagePage.tsx (location management UI)
+- [x] T082 [US2] Create location API service in frontend/src/services/location_api.ts (locations CRUD)
+- [x] T083 [US2] Create ownership API service in frontend/src/services/ownership_api.ts (ownerships CRUD)
+- [x] T084 [US2] Update BookForm component to include location selection in frontend/src/components/BookForm/BookForm.tsx
+- [x] T085 [US2] Add multiple location selection UI in frontend/src/components/BookForm/BookForm.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Users can create locations and associate multiple locations with books. All tests should pass.
 
@@ -170,31 +170,31 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation. Tests are required for all user stories.**
 
-- [x] T085 [P] [US3] Create unit test for BookService search method in backend/tests/unit/book_service.test.ts (test title/author filtering)
-- [x] T086 [P] [US3] Create integration test for GET /api/books endpoint with search parameter in backend/tests/integration/books.test.ts (test search functionality)
-- [x] T087 [P] [US3] Create integration test for GET /api/books/{isbn} endpoint in backend/tests/integration/books.test.ts (test book detail with locations)
-- [x] T088 [P] [US3] Create performance test for search with 1000+ books in backend/tests/integration/books.test.ts (test SC-002: search results within 1 second)
-- [x] T089 [P] [US3] Create component test for BookList in frontend/tests/unit/BookList.test.tsx (test book list display)
-- [x] T090 [P] [US3] Create component test for BookDetail in frontend/tests/unit/BookDetail.test.tsx (test book detail view with locations)
-- [x] T091 [P] [US3] Create component test for SearchBar in frontend/tests/unit/SearchBar.test.tsx (test keyword search input)
-- [x] T092 [P] [US3] Create integration test for BookListPage in frontend/tests/integration/BookListPage.test.tsx (test full list/search flow)
-- [x] T093 [P] [US3] Create edge case test for empty search results in frontend/tests/integration/BookListPage.test.tsx (test "no books found" message)
-- [x] T094 [P] [US3] Create edge case test for special characters in search query in backend/tests/integration/books.test.ts (test special character handling)
+- [x] T086 [P] [US3] Create unit test for BookService search method in backend/tests/unit/book_service.test.ts (test title/author filtering)
+- [x] T087 [P] [US3] Create integration test for GET /api/books endpoint with search parameter in backend/tests/integration/books.test.ts (test search functionality)
+- [x] T088 [P] [US3] Create integration test for GET /api/books/{isbn} endpoint in backend/tests/integration/books.test.ts (test book detail with locations)
+- [x] T089 [P] [US3] Create performance test for search with 1000+ books in backend/tests/integration/books.test.ts (test SC-002: search results within 1 second)
+- [x] T090 [P] [US3] Create component test for BookList in frontend/tests/unit/BookList.test.tsx (test book list display)
+- [x] T091 [P] [US3] Create component test for BookDetail in frontend/tests/unit/BookDetail.test.tsx (test book detail view with locations)
+- [x] T092 [P] [US3] Create component test for SearchBar in frontend/tests/unit/SearchBar.test.tsx (test keyword search input)
+- [x] T093 [P] [US3] Create integration test for BookListPage in frontend/tests/integration/BookListPage.test.tsx (test full list/search flow)
+- [x] T094 [P] [US3] Create edge case test for empty search results in frontend/tests/integration/BookListPage.test.tsx (test "no books found" message)
+- [x] T095 [P] [US3] Create edge case test for special characters in search query in backend/tests/integration/books.test.ts (test special character handling)
 
 ### Implementation for User Story 3
 
-- [x] T095 [US3] Update BookService to add search method (title/author filtering) in backend/src/services/book_service.ts
-- [x] T096 [US3] Implement GET /api/books endpoint with search parameter in backend/src/api/routes/books.ts (list books with optional search)
-- [x] T097 [US3] Implement GET /api/books/{isbn} endpoint in backend/src/api/routes/books.ts (book detail with locations)
-- [x] T098 [US3] Verify database indexes for search performance (title, author) in backend/schema.sql (indexes should already exist from data-model.md)
-- [x] T099 [US3] Create BookList component in frontend/src/components/BookList/BookList.tsx (book list display)
-- [x] T100 [US3] Create BookDetail component in frontend/src/components/BookDetail/BookDetail.tsx (book detail view with locations)
-- [x] T101 [US3] Create BookListPage in frontend/src/pages/BookListPage.tsx (main list/search UI)
-- [x] T102 [US3] Create SearchBar component in frontend/src/components/SearchBar/SearchBar.tsx (keyword search input)
-- [x] T103 [US3] Update book API service to add GET /api/books with search parameter in frontend/src/services/book_api.ts
-- [x] T104 [US3] Add real-time search filtering in frontend/src/components/SearchBar/SearchBar.tsx
-- [x] T105 [US3] Add empty state UI for "no books found" in frontend/src/components/BookList/BookList.tsx
-- [x] T106 [US3] Add loading states and error handling in frontend/src/pages/BookListPage.tsx
+- [x] T096 [US3] Update BookService to add search method (title/author filtering) in backend/src/services/book_service.ts
+- [x] T097 [US3] Implement GET /api/books endpoint with search parameter in backend/src/api/routes/books.ts (list books with optional search)
+- [x] T098 [US3] Implement GET /api/books/{isbn} endpoint in backend/src/api/routes/books.ts (book detail with locations)
+- [x] T099 [US3] Verify database indexes for search performance (title, author) in backend/schema.sql (indexes should already exist from data-model.md)
+- [x] T100 [US3] Create BookList component in frontend/src/components/BookList/BookList.tsx (book list display)
+- [x] T101 [US3] Create BookDetail component in frontend/src/components/BookDetail/BookDetail.tsx (book detail view with locations)
+- [x] T102 [US3] Create BookListPage in frontend/src/pages/BookListPage.tsx (main list/search UI)
+- [x] T103 [US3] Create SearchBar component in frontend/src/components/SearchBar/SearchBar.tsx (keyword search input)
+- [x] T104 [US3] Update book API service to add GET /api/books with search parameter in frontend/src/services/book_api.ts
+- [x] T105 [US3] Add real-time search filtering in frontend/src/components/SearchBar/SearchBar.tsx
+- [x] T106 [US3] Add empty state UI for "no books found" in frontend/src/components/BookList/BookList.tsx
+- [x] T107 [US3] Add loading states and error handling in frontend/src/pages/BookListPage.tsx
 
 **Checkpoint**: All user stories should now be independently functional. Users can view, search, and manage their book collection with location information. All tests should pass.
 
@@ -204,15 +204,15 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T107 [P] Add React Router configuration in frontend/src/App.tsx (routes for BookListPage, BookRegisterPage, LocationManagePage)
-- [ ] T108 [P] Create navigation component in frontend/src/components/Navigation/Navigation.tsx (page navigation)
-- [ ] T109 [P] Add global error boundary component in frontend/src/components/ErrorBoundary/ErrorBoundary.tsx
-- [ ] T120a [P] Add loading states (skeleton UI, spinners) to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: loading states for all user stories)
-- [ ] T120b [P] Add empty states with actionable messages to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: empty states for all user stories, e.g., "書籍が登録されていません" with registration button)
-- [ ] T110 Add request logging middleware in backend/src/api/middleware/logger.ts
-- [ ] T111 Add rate limiting middleware in backend/src/api/middleware/rate_limit.ts
-- [ ] T112 [P] Add input sanitization for all user inputs in backend/src/api/middleware/validation.ts
-- [ ] T113 [P] Optimize database queries with proper joins for book list with locations in backend/src/services/book_service.ts
+- [ ] T108 [P] Add React Router configuration in frontend/src/App.tsx (routes for BookListPage, BookRegisterPage, LocationManagePage)
+- [ ] T109 [P] Create navigation component in frontend/src/components/Navigation/Navigation.tsx (page navigation)
+- [ ] T110 [P] Add global error boundary component in frontend/src/components/ErrorBoundary/ErrorBoundary.tsx
+- [ ] T111 Add request logging middleware in backend/src/api/middleware/logger.ts
+- [ ] T112 Add rate limiting middleware in backend/src/api/middleware/rate_limit.ts
+- [ ] T113 [P] Add input sanitization for all user inputs in backend/src/api/middleware/validation.ts
+- [ ] T114 [P] Optimize database queries with proper joins for book list with locations in backend/src/services/book_service.ts
+- [ ] T121 [P] Add loading states (skeleton UI, spinners) to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: loading states for all user stories)
+- [ ] T122 [P] Add empty states with actionable messages to BookRegisterPage and LocationManagePage in frontend/src/pages/ (NFR-005: empty states for all user stories, e.g., "書籍が登録されていません" with registration button)
 - [ ] T114 [P] Add pagination support for book list API in backend/src/api/routes/books.ts
 - [ ] T115 [P] Add client-side caching for search results in frontend/src/services/book_api.ts
 - [ ] T116 Code cleanup and refactoring across all components
@@ -357,14 +357,14 @@ With multiple developers:
 - **Setup Phase**: 12 tasks (T001-T012)
 - **Foundational Phase**: 13 tasks (T013-T025)
 - **User Story 1 (P1)**: 26 tasks (12 tests + 14 implementation) - ✅ **COMPLETED**
-- **User Story 2 (P2)**: 34 tasks (14 tests + 20 implementation) - ⚠️ **1 task remaining** (T066a: default location auto-creation)
+- **User Story 2 (P2)**: 34 tasks (14 tests + 20 implementation) - ⚠️ **1 task remaining** (T067: default location auto-creation)
 - **User Story 3 (P3)**: 22 tasks (10 tests + 12 implementation) - ✅ **COMPLETED**
-- **Polish Phase**: 16 tasks (T107-T120, T120a-T120b)
+- **Polish Phase**: 15 tasks (T108-T122)
 
 ### Task Count per User Story
 
 - **User Story 1**: 26 tasks (12 tests + 14 implementation) - ✅ All completed
-- **User Story 2**: 34 tasks (14 tests + 20 implementation) - ⚠️ 1 task remaining (T066a: default location auto-creation)
+- **User Story 2**: 34 tasks (14 tests + 20 implementation) - ⚠️ 1 task remaining (T067: default location auto-creation)
 - **User Story 3**: 22 tasks (10 tests + 12 implementation)
 
 ### Parallel Opportunities Identified
@@ -372,8 +372,8 @@ With multiple developers:
 - **Setup Phase**: 8 parallel tasks (T005-T012)
 - **Foundational Phase**: 8 parallel tasks (T018-T025)
 - **User Story 1**: 12 parallel test tasks (T026-T037), then backend and frontend can be developed in parallel after API contracts (✅ Completed)
-- **User Story 2**: 14 parallel test tasks (T052-T065), then Location and Ownership models can be created in parallel (T066-T067)
-- **User Story 3**: 10 parallel test tasks (T085-T094), then can be developed in parallel with other stories after Foundational phase
+- **User Story 2**: 14 parallel test tasks (T052-T065), then Location and Ownership models can be created in parallel (T066-T068)
+- **User Story 3**: 10 parallel test tasks (T086-T095), then can be developed in parallel with other stories after Foundational phase
 
 ### Independent Test Criteria
 

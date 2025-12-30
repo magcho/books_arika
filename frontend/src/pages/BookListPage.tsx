@@ -92,9 +92,15 @@ export function BookListPage() {
   }
 
   if (selectedBook) {
+    if (isLoadingDetail) {
+      return (
+        <div className="book-detail-loading">
+          <div className="loading">読み込み中...</div>
+        </div>
+      )
+    }
     return (
       <div>
-        {isLoadingDetail && <div className="loading">読み込み中...</div>}
         <BookDetail book={selectedBook} onClose={handleCloseDetail} />
       </div>
     )

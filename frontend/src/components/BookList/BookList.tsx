@@ -11,12 +11,15 @@ interface BookListProps {
   emptyMessage?: string
 }
 
-export function BookList({ books, onBookClick, emptyMessage = '書籍が登録されていません' }: BookListProps) {
+export function BookList({ books, onBookClick, emptyMessage }: BookListProps) {
+  const displayMessage = emptyMessage ?? '書籍が登録されていません'
+  const isDefaultMessage = emptyMessage === undefined
+
   if (books.length === 0) {
     return (
       <div className="book-list-empty" role="status">
-        <p>{emptyMessage}</p>
-        {emptyMessage === '書籍が登録されていません' && onBookClick && (
+        <p>{displayMessage}</p>
+        {isDefaultMessage && onBookClick && (
           <p className="empty-action-hint">書籍を登録するには、書籍登録ページに移動してください。</p>
         )}
       </div>

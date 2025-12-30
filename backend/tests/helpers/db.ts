@@ -85,7 +85,7 @@ export async function createTestLocation(
   type: 'Physical' | 'Digital'
 ): Promise<{ id: number }> {
   const result = await db
-    .prepare('INSERT INTO locations (user_id, name, type) VALUES (?, ?, ?)')
+    .prepare('INSERT OR REPLACE INTO locations (user_id, name, type) VALUES (?, ?, ?)')
     .bind(user_id, name, type)
     .run()
 

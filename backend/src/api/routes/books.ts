@@ -8,11 +8,35 @@ import { HTTPException } from 'hono/http-exception'
 import type { Env } from '../../types/db'
 import { BookService } from '../../services/book_service'
 import { OwnershipService } from '../../services/ownership_service'
+import { LocationService } from '../../services/location_service'
 import { validateRequired, validateLength, throwValidationError } from '../middleware/validation'
-import type { BookCreateRequest } from '../../types'
+import type { BookCreateRequest, Book } from '../../types'
 import { isValidISBN } from '../../models/book'
 
 const books = new Hono<{ Bindings: Env }>()
+
+/**
+ * Helper function to enrich a book with locations
+ */
+async function enrichBookWithLocations(
+  book: Book,
+  user_id: string,
+  ownershipService: OwnershipService,
+  locationService: LocationService
+) {
+  const ownerships = await ownershipService.findByISBNAndUserId(book.isbn, user_id)
+  const locations = await Promise.all(
+    ownerships.map(async (o) => {
+      const location = await locationService.findById(o.location_id)
+      return location
+    })
+  )
+  const validLocations = locations.filter((l): l is NonNullable<typeof l> => l !== null)
+  return {
+    ...book,
+    locations: validLocations,
+  }
+}
 
 /**
  * POST /api/books
@@ -183,7 +207,6 @@ books.get('/', async (c) => {
   }
 
   const ownershipService = new OwnershipService(db)
-  const { LocationService } = await import('../../services/location_service')
   const locationService = new LocationService(db)
 
   try {
@@ -199,18 +222,7 @@ books.get('/', async (c) => {
     // Enrich books with locations for the user
     const booksWithLocations = await Promise.all(
       booksList.map(async (book) => {
-        const ownerships = await ownershipService.findByISBNAndUserId(book.isbn, user_id)
-        const locations = await Promise.all(
-          ownerships.map(async (o) => {
-            const location = await locationService.findById(o.location_id)
-            return location
-          })
-        )
-        const validLocations = locations.filter((l): l is NonNullable<typeof l> => l !== null)
-        return {
-          ...book,
-          locations: validLocations,
-        }
+        return enrichBookWithLocations(book, user_id, ownershipService, locationService)
       })
     )
 
@@ -252,7 +264,6 @@ books.get('/:isbn', async (c) => {
 
   const bookService = new BookService(db)
   const ownershipService = new OwnershipService(db)
-  const { LocationService } = await import('../../services/location_service')
   const locationService = new LocationService(db)
 
   try {
@@ -269,22 +280,15 @@ books.get('/:isbn', async (c) => {
       })
     }
 
-    // Get locations for this book and user
-    const ownerships = await ownershipService.findByISBNAndUserId(isbn, user_id)
-    const locations = await Promise.all(
-      ownerships.map(async (o) => {
-        const location = await locationService.findById(o.location_id)
-        return location
-      })
+    // Enrich book with locations for the user
+    const bookWithLocations = await enrichBookWithLocations(
+      book,
+      user_id,
+      ownershipService,
+      locationService
     )
 
-    // Filter out null locations (should not happen, but safety check)
-    const validLocations = locations.filter((l): l is NonNullable<typeof l> => l !== null)
-
-    return c.json({
-      ...book,
-      locations: validLocations,
-    })
+    return c.json(bookWithLocations)
   } catch (error) {
     if (error instanceof HTTPException) {
       throw error
