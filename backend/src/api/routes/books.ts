@@ -157,21 +157,143 @@ books.post('/', async (c) => {
 
 /**
  * GET /api/books
- * List all books (for MVP, returns all books)
+ * List all books with optional search parameter
+ * Query params:
+ *   - user_id: required (for MVP: "default-user")
+ *   - search: optional (search by title or author)
  */
 books.get('/', async (c) => {
   const db = c.env.DB
   const bookService = new BookService(db)
 
+  // Get query parameters
+  const user_id = c.req.query('user_id')
+  const searchQuery = c.req.query('search')
+
+  // Validate user_id
+  if (!user_id) {
+    throw new HTTPException(400, {
+      message: JSON.stringify({
+        error: {
+          message: 'user_idは必須です',
+          code: 'MISSING_USER_ID',
+        },
+      }),
+    })
+  }
+
+  const ownershipService = new OwnershipService(db)
+  const { LocationService } = await import('../../services/location_service')
+  const locationService = new LocationService(db)
+
   try {
-    const books = await bookService.listAll()
-    return c.json({ books })
+    let booksList: Book[]
+    if (searchQuery) {
+      // Search books by title or author
+      booksList = await bookService.search(searchQuery)
+    } else {
+      // List all books
+      booksList = await bookService.listAll()
+    }
+
+    // Enrich books with locations for the user
+    const booksWithLocations = await Promise.all(
+      booksList.map(async (book) => {
+        const ownerships = await ownershipService.findByISBNAndUserId(book.isbn, user_id)
+        const locations = await Promise.all(
+          ownerships.map(async (o) => {
+            const location = await locationService.findById(o.location_id)
+            return location
+          })
+        )
+        const validLocations = locations.filter((l): l is NonNullable<typeof l> => l !== null)
+        return {
+          ...book,
+          locations: validLocations,
+        }
+      })
+    )
+
+    return c.json({ books: booksWithLocations })
   } catch (error) {
     throw new HTTPException(500, {
       message: JSON.stringify({
         error: {
           message: '書籍一覧の取得に失敗しました',
           code: 'LIST_BOOKS_ERROR',
+        },
+      }),
+    })
+  }
+})
+
+/**
+ * GET /api/books/{isbn}
+ * Get book detail with locations
+ * Query params:
+ *   - user_id: required (for MVP: "default-user")
+ */
+books.get('/:isbn', async (c) => {
+  const db = c.env.DB
+  const isbn = c.req.param('isbn')
+  const user_id = c.req.query('user_id')
+
+  // Validate user_id
+  if (!user_id) {
+    throw new HTTPException(400, {
+      message: JSON.stringify({
+        error: {
+          message: 'user_idは必須です',
+          code: 'MISSING_USER_ID',
+        },
+      }),
+    })
+  }
+
+  const bookService = new BookService(db)
+  const ownershipService = new OwnershipService(db)
+  const { LocationService } = await import('../../services/location_service')
+  const locationService = new LocationService(db)
+
+  try {
+    // Get book
+    const book = await bookService.findByISBN(isbn)
+    if (!book) {
+      throw new HTTPException(404, {
+        message: JSON.stringify({
+          error: {
+            message: '書籍が見つかりません',
+            code: 'BOOK_NOT_FOUND',
+          },
+        }),
+      })
+    }
+
+    // Get locations for this book and user
+    const ownerships = await ownershipService.findByISBNAndUserId(isbn, user_id)
+    const locations = await Promise.all(
+      ownerships.map(async (o) => {
+        const location = await locationService.findById(o.location_id)
+        return location
+      })
+    )
+
+    // Filter out null locations (should not happen, but safety check)
+    const validLocations = locations.filter((l): l is NonNullable<typeof l> => l !== null)
+
+    return c.json({
+      ...book,
+      locations: validLocations,
+    })
+  } catch (error) {
+    if (error instanceof HTTPException) {
+      throw error
+    }
+    throw new HTTPException(500, {
+      message: JSON.stringify({
+        error: {
+          message: '書籍詳細の取得に失敗しました',
+          code: 'GET_BOOK_ERROR',
         },
       }),
     })

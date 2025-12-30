@@ -10,6 +10,7 @@ import type {
   BookSearchResult,
   BooksResponse,
   SearchResponse,
+  BookWithLocations,
 } from '../types'
 
 /**
@@ -20,10 +21,14 @@ export async function createBook(data: BookCreateRequest): Promise<Book> {
 }
 
 /**
- * List all books
+ * List all books with optional search
  */
-export async function listBooks(): Promise<BooksResponse> {
-  return get<BooksResponse>('/books')
+export async function listBooks(user_id: string, search?: string): Promise<BooksResponse> {
+  const params = new URLSearchParams({ user_id })
+  if (search) {
+    params.append('search', search)
+  }
+  return get<BooksResponse>(`/books?${params.toString()}`)
 }
 
 /**
@@ -41,5 +46,12 @@ export async function searchBooks(
  */
 export async function searchByBarcode(isbn: string): Promise<BookSearchResult> {
   return post<BookSearchResult>('/search/barcode', { isbn })
+}
+
+/**
+ * Get book detail with locations
+ */
+export async function getBookDetail(isbn: string, user_id: string): Promise<BookWithLocations> {
+  return get<BookWithLocations>(`/books/${encodeURIComponent(isbn)}?user_id=${encodeURIComponent(user_id)}`)
 }
 

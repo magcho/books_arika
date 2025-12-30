@@ -61,3 +61,38 @@ export async function resetTestDatabase(db: D1Database): Promise<void> {
   await setupTestDatabase(db)
 }
 
+/**
+ * Create a test user
+ */
+export async function createTestUser(
+  db: D1Database,
+  user_id: string,
+  name: string
+): Promise<void> {
+  await db
+    .prepare('INSERT OR REPLACE INTO users (id, name) VALUES (?, ?)')
+    .bind(user_id, name)
+    .run()
+}
+
+/**
+ * Create a test location
+ */
+export async function createTestLocation(
+  db: D1Database,
+  user_id: string,
+  name: string,
+  type: 'Physical' | 'Digital'
+): Promise<{ id: number }> {
+  const result = await db
+    .prepare('INSERT INTO locations (user_id, name, type) VALUES (?, ?, ?)')
+    .bind(user_id, name, type)
+    .run()
+
+  if (!result.meta.last_row_id) {
+    throw new Error('Failed to create test location')
+  }
+
+  return { id: result.meta.last_row_id }
+}
+
