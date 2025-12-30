@@ -17,7 +17,7 @@ export function BookRegisterPage() {
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
       <BookForm key={refreshKey} onSuccess={handleSuccess} defaultUserId={DEFAULT_USER_ID} />
     </div>
   )

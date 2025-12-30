@@ -47,10 +47,9 @@ describe('BookList', () => {
 
     render(<BookList books={books} onBookClick={mockOnClick} />)
     const bookItem = screen.getByText('Book 1').closest('.book-item')
-    if (bookItem) {
-      fireEvent.click(bookItem)
-      expect(mockOnClick).toHaveBeenCalledWith(books[0])
-    }
+    expect(bookItem).not.toBeNull()
+    fireEvent.click(bookItem!)
+    expect(mockOnClick).toHaveBeenCalledWith(books[0])
   })
 
   it('should display book locations', () => {

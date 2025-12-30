@@ -67,7 +67,7 @@ export function BookListPage() {
     [books, loadBooks]
   )
 
-  const handleBookClick = async (book: BookWithLocations) => {
+  const handleBookClick = useCallback(async (book: BookWithLocations) => {
     setIsLoadingDetail(true)
     setError(null)
     try {
@@ -85,7 +85,7 @@ export function BookListPage() {
     } finally {
       setIsLoadingDetail(false)
     }
-  }
+  }, [])
 
   const handleCloseDetail = () => {
     setSelectedBook(null)
