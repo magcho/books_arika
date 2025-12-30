@@ -124,6 +124,7 @@ export const Error: Story = {
 }
 
 export const Interactive: Story = {
+  tags: ['interactive'], // VRTでスキップするためのタグ
   args: {
     userId: 'user-1',
     onLocationChange: fn(),

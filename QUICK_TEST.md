@@ -120,3 +120,4 @@ cd backend
 npx wrangler d1 execute books-arika-db --local --command="SELECT * FROM books"
 ```
 
+

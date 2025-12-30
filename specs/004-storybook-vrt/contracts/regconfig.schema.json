@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "reg-suit Configuration Schema",
+  "description": "reg-suitの設定ファイルのスキーマ定義",
+  "type": "object",
+  "required": ["core"],
+  "properties": {
+    "core": {
+      "type": "object",
+      "required": ["workingDir", "actualDir", "expectedDir", "diffDir"],
+      "properties": {
+        "workingDir": {
+          "type": "string",
+          "description": "作業ディレクトリ",
+          "default": ".reg"
+        },
+        "actualDir": {
+          "type": "string",
+          "description": "実際のスクリーンショットの保存先",
+          "default": "screenshots/actual"
+        },
+        "expectedDir": {
+          "type": "string",
+          "description": "ベースラインの保存先",
+          "default": ".reg/expected"
+        },
+        "diffDir": {
+          "type": "string",
+          "description": "差分画像の保存先",
+          "default": ".reg/diff"
+        }
+      }
+    },
+    "plugins": {
+      "type": "object",
+      "properties": {
+        "reg-keygen-git-hash-plugin": {
+          "type": "object",
+          "description": "Gitハッシュでバージョン管理するプラグイン"
+        },
+        "reg-notify-github-plugin": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "GitHub通知を有効にするか",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "threshold": {
+      "type": "number",
+      "description": "差分検出の閾値（0.0 - 1.0）",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.01
+    }
+  }
+}
+
+

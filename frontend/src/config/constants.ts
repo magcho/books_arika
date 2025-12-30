@@ -10,3 +10,4 @@
  */
 export const DEFAULT_USER_ID = import.meta.env.VITE_DEFAULT_USER_ID || 'default-user'
 
+

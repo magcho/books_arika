@@ -44,3 +44,4 @@ Phase 4 (User Story 2 - 所有・場所情報の管理) の実装に進む準備
 ## 関連タスク
 - T026-T039: Phase 3 User Story 1
 
+

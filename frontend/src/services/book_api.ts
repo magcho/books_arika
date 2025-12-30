@@ -43,3 +43,4 @@ export async function searchByBarcode(isbn: string): Promise<BookSearchResult> {
   return post<BookSearchResult>('/search/barcode', { isbn })
 }
 
+

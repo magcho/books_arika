@@ -115,3 +115,4 @@ echo "1. $FIXTURE_FILE のデフォルト値を設定"
 echo "2. $TEST_FILE のテストケースを実装"
 echo "3. テストを実行: cd backend && npm test -- --run"
 
+

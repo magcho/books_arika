@@ -33,3 +33,4 @@
 
 - All items pass validation. Specification is ready for `/speckit.plan` or `/speckit.clarify`.
 
+

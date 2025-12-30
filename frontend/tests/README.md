@@ -116,3 +116,4 @@ Test coverage threshold is set to 80% for:
 
 Coverage reports are generated in `coverage/` directory after running tests with `--coverage` flag.
 
+

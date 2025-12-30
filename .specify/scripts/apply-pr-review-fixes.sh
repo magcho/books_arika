@@ -72,3 +72,4 @@ echo "4. コミット & プッシュ"
 echo ""
 echo "詳細は .specify/scripts/pr-review-checklist.md を参照してください"
 
+

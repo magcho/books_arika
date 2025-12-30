@@ -47,6 +47,7 @@ export const ManualInput: Story = {
 }
 
 export const Interactive: Story = {
+  tags: ['interactive'], // VRTでスキップするためのタグ
   args: {
     onScan: fn(),
     onError: fn(),

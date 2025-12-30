@@ -36,3 +36,4 @@ pkill -f "vite" 2>/dev/null && echo "✅ Killed remaining vite processes"
 echo ""
 echo "✅ All servers stopped"
 
+

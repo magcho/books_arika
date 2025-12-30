@@ -1,0 +1,92 @@
+name: Visual Regression Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  vrt:
+    name: VRT - Visual Regression Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # reg-suitでGit履歴が必要
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Storybook
+        working-directory: ./frontend
+        run: npm run build-storybook
+
+      - name: Download baseline from artifacts (if exists)
+        uses: actions/download-artifact@v4
+        with:
+          name: vrt-baseline
+          path: frontend/.reg/expected
+          if-no-found-files: warn
+        continue-on-error: true
+
+      - name: Start Storybook server
+        working-directory: ./frontend
+        run: |
+          npm run storybook &
+          sleep 10
+        continue-on-error: false
+
+      - name: Wait for Storybook to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:6006; do sleep 2; done' || exit 1
+
+      - name: Run VRT - Capture screenshots
+        working-directory: ./frontend
+        run: npm run test-storybook:ci
+        continue-on-error: true
+
+      - name: Run reg-suit - Compare and generate diff report
+        working-directory: ./frontend
+        run: npm run reg-suit
+        continue-on-error: true
+
+      - name: Upload baseline to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-baseline
+          path: frontend/.reg/expected
+          retention-days: 30
+          if-no-failure: false
+
+      - name: Upload VRT results to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-results
+          path: |
+            frontend/screenshots/actual
+            frontend/.reg/diff
+          retention-days: 30
+          if-no-failure: false
+
+      - name: Check VRT results
+        working-directory: ./frontend
+        run: |
+          if [ -d ".reg/diff" ] && [ "$(ls -A .reg/diff 2>/dev/null)" ]; then
+            echo "差分が検出されました。"
+            exit 1
+          else
+            echo "差分は検出されませんでした。"
+            exit 0
+          fi
+

@@ -1,0 +1,13 @@
+{
+  "core": {
+    "workingDir": ".reg",
+    "actualDir": "screenshots/actual",
+    "expectedDir": ".reg/expected",
+    "diffDir": ".reg/diff"
+  },
+  "plugins": {
+    "reg-keygen-git-hash-plugin": {}
+  },
+  "threshold": 0.01
+}
+
