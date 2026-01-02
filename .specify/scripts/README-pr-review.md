@@ -7,6 +7,8 @@
 - `pr-review-checklist.md` - PRレビュー対応の詳細チェックリスト
 - `apply-pr-review-fixes.sh` - PR情報取得と初期確認スクリプト
 - `create-service-tests.sh` - サービス層テストファイル生成スクリプト
+- `pr-documentation-policy.md` - PRドキュメント保持方針
+- `pr-documentation-structure.md` - PRドキュメント整理方針（参考）
 
 ## 使用方法
 
@@ -134,4 +136,5 @@ PRレビューは**インラインコメント形式**で実施します。以�
 - PR #9の対応: `git log --oneline feature/us2-pr2-backend-services | head -5`
 - テストファイル例: `backend/tests/unit/location_service.test.ts`
 - フィクスチャ例: `backend/tests/fixtures/locations.ts`
-- PRレビュー例: `PR_17_INLINE_REVIEW.md`
+- PRドキュメントポリシー: `pr-documentation-policy.md`
+- 開発ガイドライン: `../memory/development-guidelines.md`
