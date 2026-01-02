@@ -15,6 +15,11 @@ export default defineWorkersProject({
     environment: 'node',
     // CI/CD環境やエージェント実行時はウォッチモードを無効化
     watch: process.env.CI === 'true' ? false : undefined,
+    // テスト環境を明示的に設定（レート制限のスキップに使用）
+    env: {
+      VITEST: 'true',
+      NODE_ENV: 'test',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
