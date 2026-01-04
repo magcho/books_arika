@@ -27,6 +27,7 @@ app.get('/health', (c) => {
 // Import route handlers
 import { booksRoutes } from './routes/books'
 import { searchRoutes } from './routes/search'
+import { importRoutes } from './routes/import'
 
 // API routes - mount routes using app.route()
 // Note: Using app.route() with full path, routes define handlers with '/'
@@ -34,6 +35,7 @@ app.route('/api/books', booksRoutes)
 app.route('/api/search', searchRoutes)
 app.route('/api/locations', locationsRoutes)
 app.route('/api/ownerships', ownershipsRoutes)
+app.route('/api/import', importRoutes)
 
 // Error handler must be last
 app.onError(errorHandler)

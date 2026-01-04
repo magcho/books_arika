@@ -131,6 +131,127 @@ PRレビューは**インラインコメント形式**で実施します。以�
 - [ ] コードの可読性は高いか
 - [ ] 型安全性が確保されているか
 
+## GitHubのPRに直接インラインコメントを投稿する方法
+
+PRレビューは**GitHubのPRに直接インラインコメント形式で投稿**します。以下の方法を使用してください：
+
+### 方法1: GitHub CLIを使用（推奨）
+
+GitHub CLI（`gh`）を使用して、PRにインラインコメントを投稿します。
+
+#### 基本的な使い方
+
+```bash
+# PR番号を指定
+PR_NUMBER=26
+
+# 特定のファイルの特定の行にコメントを投稿
+gh pr comment $PR_NUMBER \
+  --body "🔴 **必須修正**: [コメント内容]" \
+  --repo . \
+  --file "backend/src/services/import_service.ts" \
+  --line 66
+```
+
+#### 複数行のコメント
+
+```bash
+gh pr comment $PR_NUMBER \
+  --body "🔴 **必須修正**: validateImportFileメソッドのバグ
+
+**問題**: 所有情報データ（ownerships）のチェックが、場所データ（locations）を2回チェックしています。
+
+**修正案**:
+\`\`\`typescript
+if (!Array.isArray(dataSection.ownerships)) {
+  throw new Error('所有情報データが配列形式ではありません')
+}
+\`\`\`" \
+  --file "backend/src/services/import_service.ts" \
+  --line 66
+```
+
+#### 複数のコメントを一度に投稿
+
+各コメントを個別に投稿する必要があります：
+
+```bash
+# コメント1
+gh pr comment $PR_NUMBER --body "🔴 コメント1" --file "path/to/file.ts" --line 10
+
+# コメント2
+gh pr comment $PR_NUMBER --body "🟡 コメント2" --file "path/to/file.ts" --line 20
+```
+
+### 方法2: GitHub Web UIを使用
+
+1. PRページを開く
+2. 「Files changed」タブを選択
+3. コメントしたい行の左側の「+」アイコンをクリック
+4. コメントを入力して「Add single comment」または「Start a review」をクリック
+
+### インラインコメントの形式
+
+GitHubのPRに投稿するインラインコメントは、以下の形式に従ってください：
+
+1. **優先度を明示**（コメントの最初に記載）
+   - 🔴 必須修正
+   - 🟡 推奨改善
+   - 🟢 軽微な改善
+
+2. **問題点を明確に記述**
+   - 何が問題なのか
+   - なぜ問題なのか
+
+3. **修正案を含める**（可能な限り）
+   - 具体的なコード例を提供
+   - コードブロックを使用
+
+4. **良い点も記載**（該当する場合）
+   - まず良い点をコメント
+   - その後、修正提案をコメント
+
+### インラインコメント例
+
+```
+🔴 **必須修正**: validateImportFileメソッドのバグ
+
+**問題**: 所有情報データ（ownerships）のチェックが、場所データ（locations）を2回チェックしています。これは明らかなバグです。
+
+**現在のコード**:
+```typescript
+if (!Array.isArray(dataSection.locations)) {
+  throw new Error('所有情報データが配列形式ではありません')
+}
+```
+
+**修正案**:
+```typescript
+if (!Array.isArray(dataSection.ownerships)) {
+  throw new Error('所有情報データが配列形式ではありません')
+}
+```
+```
+
+### レビュー完了時の処理
+
+すべてのインラインコメントを投稿した後、レビューを完了します：
+
+```bash
+# レビューを提出（CHANGES_REQUESTEDまたはCOMMENT）
+gh pr review $PR_NUMBER --body "レビューを完了しました。必須修正項目の対応をお願いします。" --request-changes
+
+# または、コメントのみ
+gh pr review $PR_NUMBER --body "レビューを完了しました。推奨改善項目の検討をお願いします。" --comment
+```
+
+### 注意事項
+
+- インラインコメントは、該当するコード行に直接関連付けて投稿してください
+- 複数のファイルにコメントがある場合は、各ファイルごとにコメントを投稿してください
+- 必須修正項目は必ず明示し、マージ前に修正が必要であることを明確にしてください
+- レビュー完了後は、必要に応じて`docs/prs/[PR番号]/reviews/inline-comments.md`にコメントを保存することもできます（参考用）
+
 ## 参考
 
 - PR #9の対応: `git log --oneline feature/us2-pr2-backend-services | head -5`

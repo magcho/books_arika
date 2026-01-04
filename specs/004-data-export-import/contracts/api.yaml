@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: Books Arika API - Export/Import
+  description: データエクスポート・インポート機能のAPI仕様
+  version: 1.0.0
+servers:
+  - url: https://books-arika.pages.dev/api
+    description: Production server
+  - url: http://localhost:8787/api
+    description: Local development server
+
+paths:
+  /export:
+    get:
+      summary: データエクスポート
+      description: ユーザーの書籍管理データ（書籍、場所、所有情報）をJSON形式でエクスポートする
+      tags:
+        - Export/Import
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      responses:
+        '200':
+          description: エクスポート成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /import:
+    post:
+      summary: データインポート（差分検出）
+      description: インポートファイルをアップロードし、データベースとの差分を検出する
+      tags:
+        - Export/Import
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportData'
+      responses:
+        '200':
+          description: 差分検出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportDiffResult'
+        '400':
+          description: バリデーションエラー（ファイル形式が不正、バージョンがサポートされていない等）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /import/apply:
+    post:
+      summary: データインポート（適用）
+      description: ユーザーの選択に基づいてインポートを実行する
+      tags:
+        - Export/Import
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: ユーザーID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportApplyRequest'
+      responses:
+        '200':
+          description: インポート成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "インポートが完了しました"
+                  stats:
+                    type: object
+                    properties:
+                      added:
+                        type: number
+                        description: 追加されたエンティティ数
+                      modified:
+                        type: number
+                        description: 変更されたエンティティ数
+                      deleted:
+                        type: number
+                        description: 削除されたエンティティ数
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ExportData:
+      type: object
+      required:
+        - version
+        - exported_at
+        - data
+      properties:
+        version:
+          type: string
+          example: "1.0"
+          description: ファイル形式バージョン
+        exported_at:
+          type: string
+          format: date-time
+          example: "2025-01-27T12:00:00Z"
+          description: エクスポート日時（ISO 8601形式）
+        data:
+          type: object
+          required:
+            - books
+            - locations
+            - ownerships
+          properties:
+            books:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExportBook'
+            locations:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExportLocation'
+            ownerships:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExportOwnership'
+
+    ExportBook:
+      type: object
+      required:
+        - title
+        - is_doujin
+        - created_at
+        - updated_at
+      properties:
+        isbn:
+          type: string
+          nullable: true
+          example: "9781234567890"
+        title:
+          type: string
+          maxLength: 500
+          example: "書籍タイトル"
+        author:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: "著者名"
+        thumbnail_url:
+          type: string
+          nullable: true
+          example: "https://example.com/thumbnail.jpg"
+        is_doujin:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+
+    ExportLocation:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: 場所ID（参照用。インポート時は使用しない）
+          example: 1
+        name:
+          type: string
+          maxLength: 100
+          example: "自宅本棚"
+        type:
+          type: string
+          enum:
+            - Physical
+            - Digital
+          example: "Physical"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+
+    ExportOwnership:
+      type: object
+      required:
+        - user_id
+        - isbn
+        - location_id
+        - created_at
+      properties:
+        user_id:
+          type: string
+          example: "default-user"
+        isbn:
+          type: string
+          example: "9781234567890"
+        location_id:
+          type: integer
+          description: 場所ID（参照用。インポート時は名前+タイプでマッチングした新しいIDを使用）
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00Z"
+
+    ImportDiffResult:
+      type: object
+      required:
+        - additions
+        - modifications
+        - deletions
+      properties:
+        additions:
+          type: array
+          description: 追加されるエンティティ（インポートファイルにのみ存在）
+          items:
+            $ref: '#/components/schemas/ImportDifference'
+        modifications:
+          type: array
+          description: 変更されるエンティティ（両方に存在し値が異なる）
+          items:
+            $ref: '#/components/schemas/ImportDifference'
+        deletions:
+          type: array
+          description: 削除されるエンティティ（データベースにのみ存在）
+          items:
+            $ref: '#/components/schemas/ImportDifference'
+
+    ImportDifference:
+      type: object
+      required:
+        - type
+        - entity_id
+        - entity_data
+      properties:
+        type:
+          type: string
+          enum:
+            - book
+            - location
+            - ownership
+          description: エンティティタイプ
+        entity_id:
+          type: string
+          description: エンティティ識別子（ISBN、name+type、user_id+isbn+location_id等）
+          example: "9781234567890"
+        entity_data:
+          type: object
+          description: エンティティデータ
+          properties:
+            database:
+              description: データベース側の値（変更・削除の場合）
+              type: object
+            import:
+              description: インポートファイル側の値（追加・変更の場合）
+              type: object
+        fields_changed:
+          type: array
+          description: 変更されたフィールド名（変更の場合）
+          items:
+            type: string
+          example: ["title", "author"]
+
+    ImportSelection:
+      type: object
+      required:
+        - entity_id
+        - priority
+      properties:
+        entity_id:
+          type: string
+          description: エンティティ識別子
+          example: "9781234567890"
+        priority:
+          type: string
+          enum:
+            - database
+            - import
+          description: どちらを優先するか
+
+    ImportApplyRequest:
+      type: object
+      required:
+        - selections
+      properties:
+        selections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportSelection'
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - message
+            - code
+          properties:
+            message:
+              type: string
+              example: "エラーメッセージ"
+            code:
+              type: string
+              example: "ERROR_CODE"
+            details:
+              type: object
+              description: エラー詳細情報
+
+  responses:
+    BadRequest:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
