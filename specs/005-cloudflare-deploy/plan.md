@@ -74,6 +74,8 @@ specs/005-cloudflare-deploy/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+│   └── deploy-workflow.yml  # GitHub Actionsワークフロー定義
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -96,7 +98,7 @@ frontend/
 
 .github/
 └── workflows/
-    └── deploy.yml       # デプロイワークフロー（新規作成、オプション）
+    └── deploy.yml       # デプロイワークフロー（新規作成）
 
 scripts/
 └── migration-check.js   # マイグレーションファイル検出とPRコメント生成（新規作成）
@@ -133,7 +135,7 @@ scripts/
 ### 設計アーティファクト
 
 - **quickstart.md**: デプロイ設定の手順とセットアップガイド（人間の操作が必要なステップを明確に提示）
-- **設定ファイル**: wrangler.tomlの本番環境設定、GitHub統合設定（実装タスクで作成）
+- **contracts/deploy-workflow.yml**: GitHub Actionsワークフロー定義（マイグレーション実行とPRコメント通知）
 
 ### 人間の操作が必要なステップ
 
@@ -145,10 +147,18 @@ scripts/
 4. **本番環境のD1データベース設定**: 本番環境用のD1データベースを作成し、スキーマを適用
 5. **初回デプロイの実行**: バックエンドとフロントエンドの初回デプロイを実行
 6. **自動デプロイの設定**: GitHub Actionsワークフローを作成し、GitHub Secretsを設定
+7. **動作確認**: 自動デプロイとマイグレーション通知の動作を確認
 
+### データモデル
+
+この機能はデプロイ設定のため、アプリケーションのデータモデルは不要です。代わりに、デプロイ設定ファイルの構造を定義します：
+
+- **wrangler.toml**: Cloudflare Workersの設定ファイル（D1データベースバインディング、環境変数等）
+- **GitHub Actionsワークフロー**: デプロイプロセスの自動化（テスト、マイグレーション実行、PRコメント通知）
+- **Cloudflare Pages設定**: ビルドコマンド、出力ディレクトリ、環境変数等
 
 ## Phase 2: Implementation Tasks
 
-**Status**: ⏳ Pending Phase 1 completion
+**Status**: ⏳ Pending
 
 タスクの詳細は `/speckit.tasks` コマンドで生成されます。

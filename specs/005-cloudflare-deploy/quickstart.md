@@ -110,10 +110,11 @@ npx wrangler d1 list
 #### 3.1: バックエンド（Cloudflare Workers）の環境変数設定
 
 1. Cloudflare Dashboard > **Workers & Pages** > **books-arika-api** > **Settings** > **Variables** に移動
-2. 本番環境用の環境変数を設定：
+2. **Environment Variables** セクションで本番環境用の環境変数を設定：
    - **GOOGLE_BOOKS_API_KEY**: シークレットとして設定（**Encrypt** を有効化）
    - その他の必要な環境変数を追加
-3. **Save** をクリック
+3. **D1 Database Bindings** セクションでD1データベースのバインディングを設定（ステップ4.2を参照）
+4. **Save** をクリック
 
 #### 3.2: フロントエンド（Cloudflare Pages）の環境変数設定
 
@@ -152,10 +153,27 @@ npx wrangler secret list
 
 3. 作成されたデータベースのIDをメモ（後で使用）
 
-#### 4.2: wrangler.tomlの更新
+#### 4.2: Cloudflare DashboardでD1データベースバインディングを設定（推奨）
 
+**方法1: Cloudflare Dashboardで設定（推奨）**
+
+1. Cloudflare Dashboard > **Workers & Pages** > **books-arika-api** > **Settings** > **Variables** に移動
+2. **D1 Database Bindings** セクションで **Add binding** をクリック
+3. 以下の設定を入力：
+   - **Variable name**: `DB`（コードで`env.DB`として使用されるため、この名前が必要）
+   - **D1 Database**: ステップ4.1で作成した本番環境のD1データベース（`books-arika-db-production`）を選択
+4. **Save** をクリック
+
+**注意**: 
+- コードでは既に`env.DB`を使用しているため、コードの変更は不要です
+- Cloudflare Dashboardで設定したバインディングは、`wrangler.toml`の設定よりも優先されます
+- この方法を使用する場合、`wrangler.toml`の`[[d1_databases]]`セクションは不要です
+
+**方法2: wrangler.tomlで設定（代替方法）**
+
+Cloudflare Dashboardで設定できない場合、`wrangler.toml`で設定：
 1. `backend/wrangler.toml`を開く
-2. 本番環境用のデータベースIDを更新：
+2. `[[d1_databases]]`セクションのコメントを解除し、本番環境のデータベースIDを設定：
    ```toml
    [[d1_databases]]
    binding = "DB"
@@ -304,6 +322,11 @@ npx wrangler d1 execute books-arika-db-production --command="SELECT name FROM sq
 2. **New repository secret** をクリック
 3. 以下のシークレットを追加：
    - **CLOUDFLARE_API_TOKEN**: Cloudflare APIトークン（Cloudflare Dashboard > **My Profile** > **API Tokens** で作成）
+   - **GOOGLE_BOOKS_API_KEY**: Google Books APIキー（テスト用、本番環境ではCloudflare Dashboardで設定）
+
+**注意**: 
+- D1データベースのバインディングはCloudflare Dashboardで設定するため、`D1_DATABASE_ID`シークレットは不要です
+- マイグレーション実行時は、`wrangler d1 migrations apply`コマンドでデータベース名を指定します
 
 **確認方法**:
 - GitHub Actionsワークフローが正常に実行されることを確認

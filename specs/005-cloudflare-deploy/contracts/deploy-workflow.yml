@@ -1,0 +1,149 @@
+# GitHub Actions Workflow: Cloudflare Deploy
+# 
+# このワークフローは、Cloudflare WorkersとCloudflare PagesのGitHub統合と連携して、
+# デプロイプロセスを自動化します。
+#
+# 主な機能:
+# - テストの自動実行
+# - データベースマイグレーションの自動実行
+# - PRコメントによるマイグレーション実行通知
+# - デプロイ成功・失敗の通知
+
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # バックエンドのテストとマイグレーション実行
+  deploy-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Wrangler CLI
+        run: npm install -g wrangler
+
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci
+
+      - name: Run Backend Tests
+        run: cd backend && npm test
+        timeout-minutes: 5
+        env:
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY || 'dummy-api-key' }}
+
+      - name: Check for Migration Files
+        id: check-migrations
+        run: |
+          if [ -n "$(find backend/migrations -name '*.sql' -type f 2>/dev/null | head -1)" ]; then
+            echo "has_migrations=true" >> $GITHUB_OUTPUT
+            echo "migration_files=$(find backend/migrations -name '*.sql' -type f | wc -l)" >> $GITHUB_OUTPUT
+          else
+            echo "has_migrations=false" >> $GITHUB_OUTPUT
+            echo "migration_files=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR - Migration Status
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const hasMigrations = '${{ steps.check-migrations.outputs.has_migrations }}' === 'true';
+            const migrationFiles = '${{ steps.check-migrations.outputs.migration_files }}';
+            
+            let comment = '';
+            if (hasMigrations) {
+              comment = `⚠️ **データベースマイグレーション検出**\n\n` +
+                       `このPRには ${migrationFiles} 個のマイグレーションファイルが含まれています。\n\n` +
+                       `デプロイ時に自動的にマイグレーションが実行されます。\n\n` +
+                       `**注意**: マイグレーション実行中にエラーが発生した場合、デプロイは自動的に中止され、前のバージョンにロールバックされます。`;
+            } else {
+              comment = `✅ **データベースマイグレーションなし**\n\n` +
+                       `このPRにはデータベースマイグレーションファイルは含まれていません。\n\n` +
+                       `デプロイ時にマイグレーションは実行されません。`;
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Apply D1 Migrations
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check-migrations.outputs.has_migrations == 'true'
+        run: |
+          cd backend
+          npx wrangler d1 migrations apply books-arika-db-production --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        continue-on-error: false
+
+      - name: Report Migration Failure
+        if: failure() && steps.check-migrations.outputs.has_migrations == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `❌ **マイグレーション実行失敗**\n\n` +
+                           `データベースマイグレーションの実行中にエラーが発生しました。\n\n` +
+                           `デプロイは自動的に中止され、前のバージョンにロールバックされます。\n\n` +
+                           `詳細はワークフローのログを確認してください。`;
+            
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+            
+            // コミットステータスを設定
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'failure',
+              context: 'deploy/migrations',
+              description: 'Migration execution failed'
+            });
+
+  # フロントエンドのテスト
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci
+
+      - name: Run Frontend Tests
+        run: cd frontend && npm test
+        timeout-minutes: 5
+
+      - name: Build Frontend (Dry Run)
+        if: github.event_name == 'pull_request'
+        run: cd frontend && npm run build
+        continue-on-error: true

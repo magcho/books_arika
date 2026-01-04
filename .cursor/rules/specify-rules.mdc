@@ -30,9 +30,9 @@ npm test && npm run lint
 TypeScript 5.x (Frontend/Backend共通): Follow standard conventions
 
 ## Recent Changes
+- 005-cloudflare-deploy: Added TypeScript 5.x (Frontend/Backend共通)
 - 005-fix-frontend-ts-errors: Added TypeScript 5.3.0 + React 18.2.0, Vite 5.4.21
 - 004-data-export-import: Added TypeScript 5.3.0 + Hono 4.0.0 (backend), React 18.2.0 (frontend), Cloudflare Workers
-- 001-book-management: Added TypeScript 5.x (Frontend/Backend共通)
 
 
 <!-- MANUAL ADDITIONS START -->

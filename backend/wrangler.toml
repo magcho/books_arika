@@ -7,13 +7,15 @@ compatibility_flags = ["nodejs_compat"]
 port = 8787
 
 # D1 Database binding
-# Note: Replace with actual database_id after running: wrangler d1 create books-arika-db
-# For local development, use --local flag: wrangler dev --local
-# Local development uses a dummy ID - replace with real ID for production
-[[d1_databases]]
-binding = "DB"
-database_name = "books-arika-db"
-database_id = "00000000-0000-0000-0000-000000000000"  # Dummy ID for local dev
+# Note: For local development, use --local flag: wrangler dev --local (ignores this setting)
+# For production: D1 database binding is configured in Cloudflare Dashboard
+# Cloudflare Dashboard > Workers & Pages > books-arika-api > Settings > Variables > D1 Database Bindings
+# The binding name "DB" is used in code (env.DB) - no code changes needed
+# If you need to configure via wrangler.toml, uncomment the section below:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "books-arika-db-production"
+# database_id = "your-production-database-id"
 
 # Environment variables
 [vars]
