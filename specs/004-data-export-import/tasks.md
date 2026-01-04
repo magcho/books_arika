@@ -24,8 +24,8 @@
 
 **Purpose**: Project initialization and type definitions
 
-- [ ] T001 Create export/import type definitions in backend/src/types/export_import.ts
-- [ ] T002 [P] Create export/import type definitions in frontend/src/types/export_import.ts
+- [x] T001 Create export/import type definitions in backend/src/types/export_import.ts
+- [x] T002 [P] Create export/import type definitions in frontend/src/types/export_import.ts
 
 ---
 
@@ -51,19 +51,19 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation. Tests are required for all user stories.**
 
-- [ ] T003 [P] [US1] Write unit test for ExportService.exportUserData in backend/tests/unit/export_service.test.ts
-- [ ] T004 [P] [US1] Write integration test for GET /api/export endpoint in backend/tests/integration/export.test.ts
-- [ ] T005 [P] [US1] Write unit test for ExportButton component in frontend/tests/unit/ExportButton.test.tsx
-- [ ] T006 [P] [US1] Write integration test for export flow in frontend/tests/integration/export_import.test.tsx
+- [x] T003 [P] [US1] Write unit test for ExportService.exportUserData in backend/tests/unit/export_service.test.ts
+- [x] T004 [P] [US1] Write integration test for GET /api/export endpoint in backend/tests/integration/export.test.ts
+- [x] T005 [P] [US1] Write unit test for ExportButton component in frontend/tests/unit/ExportButton.test.tsx
+- [x] T006 [P] [US1] Write integration test for export flow in frontend/tests/integration/export_import.test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement ExportService.exportUserData in backend/src/services/export_service.ts (depends on T001)
-- [ ] T008 [US1] Implement GET /api/export route handler in backend/src/api/routes/export.ts (depends on T007)
-- [ ] T009 [US1] Register export route in backend/src/api/index.ts (depends on T008)
-- [ ] T010 [P] [US1] Implement exportApi.export in frontend/src/services/export_api.ts (depends on T002)
-- [ ] T011 [US1] Implement ExportButton component in frontend/src/components/ExportButton/ExportButton.tsx (depends on T010)
-- [ ] T012 [US1] Create or update SettingsPage to include ExportButton in frontend/src/pages/SettingsPage.tsx (depends on T011)
+- [x] T007 [US1] Implement ExportService.exportUserData in backend/src/services/export_service.ts (depends on T001)
+- [x] T008 [US1] Implement GET /api/export route handler in backend/src/api/routes/export.ts (depends on T007)
+- [x] T009 [US1] Register export route in backend/src/api/index.ts (depends on T008)
+- [x] T010 [P] [US1] Implement exportApi.export in frontend/src/services/export_api.ts (depends on T002)
+- [x] T011 [US1] Implement ExportButton component in frontend/src/components/ExportButton/ExportButton.tsx (depends on T010)
+- [x] T012 [US1] Create or update SettingsPage to include ExportButton in frontend/src/pages/SettingsPage.tsx (depends on T011)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Users can export their data as a JSON file.
 
