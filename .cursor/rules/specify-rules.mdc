@@ -8,6 +8,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-22
 - Cloudflare D1 (リレーショナルデータベース、エッジで動作するSQLite) (001-book-management)
 - TypeScript 5.3.0 + Hono 4.0.0 (backend), React 18.2.0 (frontend), Cloudflare Workers (004-data-export-import)
 - Cloudflare D1 (SQLite) (004-data-export-import)
+- TypeScript 5.3.0 + React 18.2.0, Vite 5.4.21 (005-fix-frontend-ts-errors)
+- N/A（この機能はデータエンティティを扱わない） (005-fix-frontend-ts-errors)
 
 - TypeScript 5.x (Frontend/Backend共通) (001-book-management)
 
@@ -28,9 +30,9 @@ npm test && npm run lint
 TypeScript 5.x (Frontend/Backend共通): Follow standard conventions
 
 ## Recent Changes
+- 005-fix-frontend-ts-errors: Added TypeScript 5.3.0 + React 18.2.0, Vite 5.4.21
 - 004-data-export-import: Added TypeScript 5.3.0 + Hono 4.0.0 (backend), React 18.2.0 (frontend), Cloudflare Workers
 - 001-book-management: Added TypeScript 5.x (Frontend/Backend共通)
-- 003-storybook-setup: Added TypeScript 5.3.0 + React 18.2.0, Vite 5.0.8, Storybook 7.x系（@storybook/react-vite）
 
 
 <!-- MANUAL ADDITIONS START -->

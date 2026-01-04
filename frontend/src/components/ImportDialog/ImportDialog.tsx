@@ -20,7 +20,6 @@ interface ImportDialogProps {
 }
 
 export function ImportDialog({ userId, onClose, onSuccess }: ImportDialogProps) {
-  const [file, setFile] = useState<File | null>(null)
   const [importData, setImportData] = useState<ExportData | null>(null)
   const [diffResult, setDiffResult] = useState<ImportDiffResult | null>(null)
   const [selections, setSelections] = useState<Map<string, 'database' | 'import'>>(new Map())
@@ -33,7 +32,6 @@ export function ImportDialog({ userId, onClose, onSuccess }: ImportDialogProps) 
       const selectedFile = e.target.files?.[0]
       if (!selectedFile) return
 
-      setFile(selectedFile)
       setError(null)
       setIsLoading(true)
 
@@ -73,7 +71,6 @@ export function ImportDialog({ userId, onClose, onSuccess }: ImportDialogProps) 
         } else {
           setError('ファイルの読み込みに失敗しました')
         }
-        setFile(null)
         setImportData(null)
         setDiffResult(null)
       } finally {
@@ -278,8 +275,6 @@ function DiffItem({ diff, selection, onSelectionChange }: DiffItemProps) {
       }
       case 'ownership':
         return `所有情報: ${diff.entity_id}`
-      default:
-        return diff.entity_id
     }
   }
 
