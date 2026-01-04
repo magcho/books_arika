@@ -191,6 +191,59 @@ describe('POST /api/import', () => {
     const response = await handleTestRequest(request, db)
     expect(response.status).toBe(400)
   })
+
+  it('should handle empty data (empty arrays)', async () => {
+    const emptyData = createMockExportData({
+      data: {
+        books: [],
+        locations: [],
+        ownerships: [],
+      },
+    })
+
+    const request = new Request(`http://localhost/api/import?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(emptyData),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(200)
+
+    const diffResult = await response.json()
+    expect(diffResult.additions).toEqual([])
+    expect(diffResult.modifications).toEqual([])
+    expect(diffResult.deletions).toEqual([])
+  })
+
+  it('should return 400 when JSON is invalid (syntax error)', async () => {
+    const request = new Request(`http://localhost/api/import?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{ invalid json }',
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+  })
+
+  it('should return 400 when version is unsupported', async () => {
+    const invalidVersionData = createMockExportData({
+      version: '2.0', // Unsupported version
+    })
+
+    const request = new Request(`http://localhost/api/import?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invalidVersionData),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+
+    const error = await response.json()
+    expect(error.error.message).toContain('サポートされていないファイル形式バージョン')
+  })
 })
 
 describe('POST /api/import/apply', () => {
@@ -398,6 +451,65 @@ describe('POST /api/import/apply', () => {
 
     const response = await handleTestRequest(request, db)
     expect(response.status).toBe(400)
+  })
+
+  it('should handle empty data in apply endpoint', async () => {
+    const emptyData = createMockExportData({
+      data: {
+        books: [],
+        locations: [],
+        ownerships: [],
+      },
+    })
+
+    const request = new Request(`http://localhost/api/import/apply?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        import_data: emptyData,
+        selections: [],
+      }),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(200)
+
+    const result = await response.json()
+    expect(result.stats.added).toBe(0)
+    expect(result.stats.modified).toBe(0)
+    expect(result.stats.deleted).toBe(0)
+  })
+
+  it('should return 400 when JSON is invalid in apply endpoint', async () => {
+    const request = new Request(`http://localhost/api/import/apply?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{ invalid json }',
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+  })
+
+  it('should return 400 when version is unsupported in apply endpoint', async () => {
+    const invalidVersionData = createMockExportData({
+      version: '2.0', // Unsupported version
+    })
+
+    const request = new Request(`http://localhost/api/import/apply?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        import_data: invalidVersionData,
+        selections: [],
+      }),
+    })
+
+    const response = await handleTestRequest(request, db)
+    expect(response.status).toBe(400)
+
+    const error = await response.json()
+    expect(error.error.message).toContain('サポートされていないファイル形式バージョン')
   })
 })
 

@@ -35,6 +35,17 @@ imports.post('/', async (c) => {
     const body = await c.req.json()
     importData = importService.validateImportFile(body)
   } catch (error) {
+    // Handle JSON parse errors
+    if (error instanceof SyntaxError || (error instanceof Error && error.message.includes('JSON'))) {
+      throw new HTTPException(400, {
+        message: JSON.stringify({
+          error: {
+            message: 'リクエストボディのJSON形式が正しくありません',
+            code: 'INVALID_JSON',
+          },
+        }),
+      })
+    }
     if (error instanceof Error) {
       throw new HTTPException(400, {
         message: JSON.stringify({
@@ -81,7 +92,23 @@ imports.post('/apply', async (c) => {
     ])
   }
 
-  const body = await c.req.json<ImportApplyRequest>()
+  let body: ImportApplyRequest
+  try {
+    body = await c.req.json<ImportApplyRequest>()
+  } catch (error) {
+    // Handle JSON parse errors
+    if (error instanceof SyntaxError || (error instanceof Error && error.message.includes('JSON'))) {
+      throw new HTTPException(400, {
+        message: JSON.stringify({
+          error: {
+            message: 'リクエストボディのJSON形式が正しくありません',
+            code: 'INVALID_JSON',
+          },
+        }),
+      })
+    }
+    throw error
+  }
 
   // Validate request body
   const errors = validateRequired(body, ['selections', 'import_data'])
