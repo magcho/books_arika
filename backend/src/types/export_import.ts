@@ -3,6 +3,10 @@
  * Types for data export and import functionality
  */
 
+import type { Book } from '../models/book'
+import type { Location } from '../models/location'
+import type { Ownership } from '../models/ownership'
+
 export interface ExportData {
   version: string
   exported_at: string
@@ -48,8 +52,8 @@ export interface ImportDifference {
   type: 'book' | 'location' | 'ownership'
   entity_id: string
   entity_data: {
-    database?: any
-    import?: any
+    database?: ExportBook | ExportLocation | ExportOwnership | Book | Location | Ownership
+    import?: ExportBook | ExportLocation | ExportOwnership
   }
   fields_changed?: string[]
 }

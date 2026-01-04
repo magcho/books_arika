@@ -48,8 +48,8 @@ export interface ImportDifference {
   type: 'book' | 'location' | 'ownership'
   entity_id: string
   entity_data: {
-    database?: any
-    import?: any
+    database?: ExportBook | ExportLocation | ExportOwnership
+    import?: ExportBook | ExportLocation | ExportOwnership
   }
   fields_changed?: string[]
 }

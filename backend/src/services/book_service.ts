@@ -4,7 +4,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types'
-import type { Book, BookCreateInput } from '../models/book'
+import type { Book, BookCreateInput, BookUpdateInput } from '../models/book'
 import { generateBookId } from '../models/book'
 
 export class BookService {
@@ -145,6 +145,66 @@ export class BookService {
       ...book,
       is_doujin: Boolean(book.is_doujin),
     }))
+  }
+
+  /**
+   * Update an existing book
+   * Only updates provided fields, leaves others unchanged
+   */
+  async update(isbn: string, input: BookUpdateInput): Promise<Book> {
+    const existing = await this.findByISBN(isbn)
+    if (!existing) {
+      throw new Error(`ISBN ${isbn} の書籍が見つかりません`)
+    }
+
+    await this.db
+      .prepare(
+        `UPDATE books 
+         SET title = COALESCE(?, title),
+             author = ?,
+             thumbnail_url = ?,
+             is_doujin = COALESCE(?, is_doujin),
+             updated_at = datetime('now')
+         WHERE isbn = ?`
+      )
+      .bind(
+        input.title ?? existing.title,
+        input.author ?? null,
+        input.thumbnail_url ?? null,
+        input.is_doujin !== undefined ? (input.is_doujin ? 1 : 0) : existing.is_doujin ? 1 : 0,
+        isbn
+      )
+      .run()
+
+    const result = await this.findByISBN(isbn)
+    if (!result) {
+      throw new Error('書籍の更新に失敗しました')
+    }
+    return result
+  }
+
+  /**
+   * Delete a book
+   * Note: Will fail if ownerships exist (foreign key constraint)
+   * Should delete ownerships first before deleting book
+   */
+  async delete(isbn: string): Promise<void> {
+    const existing = await this.findByISBN(isbn)
+    if (!existing) {
+      throw new Error(`ISBN ${isbn} の書籍が見つかりません`)
+    }
+
+    try {
+      await this.db.prepare('DELETE FROM books WHERE isbn = ?').bind(isbn).run()
+    } catch (error) {
+      // Handle foreign key constraint violation
+      if (error instanceof Error && error.message.includes('FOREIGN KEY constraint')) {
+        throw new Error(
+          `ISBN ${isbn} の書籍は所有情報が存在するため削除できません。先に所有情報を削除してください。`
+        )
+      }
+      throw error
+    }
   }
 
   /**

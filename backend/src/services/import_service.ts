@@ -63,7 +63,7 @@ export class ImportService {
       throw new Error('場所データが配列形式ではありません')
     }
 
-    if (!Array.isArray(dataSection.locations)) {
+    if (!Array.isArray(dataSection.ownerships)) {
       throw new Error('所有情報データが配列形式ではありません')
     }
 
@@ -302,8 +302,12 @@ export class ImportService {
         const existing = await bookService.findByISBN(importBook.isbn)
         if (existing) {
           // Modification - update book
-          // Note: BookService doesn't have update method, so we'll need to add it
-          // For now, we'll skip modifications and only handle additions
+          await bookService.update(importBook.isbn, {
+            title: importBook.title,
+            author: importBook.author || null,
+            thumbnail_url: importBook.thumbnail_url || null,
+            is_doujin: importBook.is_doujin,
+          })
           modified++
         } else {
           // Addition - create book
@@ -319,7 +323,8 @@ export class ImportService {
       }
     }
 
-    // Process ownerships
+    // Process ownerships (additions and modifications)
+    const importOwnershipsKeySet = new Set<string>()
     for (const importOwn of importData.data.ownerships) {
       if (importOwn.user_id !== userId) continue
 
@@ -327,6 +332,7 @@ export class ImportService {
       if (!dbLocationId) continue
 
       const entityId = `${importOwn.user_id}:${importOwn.isbn}:${dbLocationId}`
+      importOwnershipsKeySet.add(entityId)
       const priority = selectionMap.get(entityId) || 'import'
 
       if (priority === 'import') {
@@ -345,24 +351,84 @@ export class ImportService {
             throw error
           }
         }
-      } else if (priority === 'database') {
-        // Deletion - remove ownership
-        const existing = await ownershipService.findByUserBookAndLocation(
-          importOwn.user_id,
-          importOwn.isbn,
-          dbLocationId
-        )
-        if (existing) {
-          await ownershipService.delete(existing.id)
+      }
+    }
+
+    // Process ownership deletions (in DB but not in import)
+    const dbOwnerships = await this.getAllUserOwnerships(userId, ownershipService)
+    for (const dbOwn of dbOwnerships) {
+      const entityId = `${dbOwn.user_id}:${dbOwn.isbn}:${dbOwn.location_id}`
+      if (!importOwnershipsKeySet.has(entityId)) {
+        const priority = selectionMap.get(entityId) || 'database'
+
+        if (priority === 'import') {
+          // User wants to delete (import file doesn't have it)
+          await ownershipService.delete(dbOwn.id)
           deleted++
         }
       }
     }
 
     // Process deletions (entities in DB but not in import)
-    // This is handled by the selection map - if user selects 'import' for a deletion,
-    // it means they want to keep the DB version (no action needed)
-    // If they select 'database', it means they want to delete (handled above)
+    // Get all user books and check which ones are not in import file
+    const dbBooks = await this.getAllUserBooks(userId, bookService)
+    const importBooksIsbnSet = new Set(
+      importData.data.books.filter((b) => b.isbn).map((b) => b.isbn!)
+    )
+
+    // Process book deletions
+    for (const dbBook of dbBooks) {
+      if (!importBooksIsbnSet.has(dbBook.isbn)) {
+        const entityId = dbBook.isbn
+        const priority = selectionMap.get(entityId) || 'database'
+
+        if (priority === 'import') {
+          // User wants to delete (import file doesn't have it)
+          try {
+            await bookService.delete(entityId)
+            deleted++
+          } catch (error) {
+            // Skip if ownerships exist (foreign key constraint)
+            if (
+              error instanceof Error &&
+              error.message.includes('所有情報が存在するため削除できません')
+            ) {
+              // Skip deletion - book has ownerships
+            } else {
+              throw error
+            }
+          }
+        }
+      }
+    }
+
+    // Process location deletions
+    // Get all user locations and check which ones are not in import file
+    const importLocationsKeySet = new Set(
+      importData.data.locations.map((loc) => `${loc.name}:${loc.type}`)
+    )
+
+    for (const [key, dbLoc] of dbLocationsMap) {
+      if (!importLocationsKeySet.has(key)) {
+        const entityId = key
+        const priority = selectionMap.get(entityId) || 'database'
+
+        if (priority === 'import') {
+          // User wants to delete (import file doesn't have it)
+          try {
+            await locationService.delete(dbLoc.id)
+            deleted++
+          } catch (error) {
+            // Skip if error (ownerships will be cascade deleted)
+            if (error instanceof Error && error.message.includes('場所が見つかりません')) {
+              // Already deleted or doesn't exist
+            } else {
+              throw error
+            }
+          }
+        }
+      }
+    }
 
     return { added, modified, deleted }
   }

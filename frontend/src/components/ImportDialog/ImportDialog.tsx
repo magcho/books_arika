@@ -188,7 +188,7 @@ export function ImportDialog({ userId, onClose, onSuccess }: ImportDialogProps) 
                 onClick={() => handleBulkSelection('deletions', 'database')}
                 className="bulk-button"
               >
-                すべての削除を保持
+                すべての削除をキャンセル
               </button>
             </div>
 
@@ -263,15 +263,42 @@ function DiffItem({ diff, selection, onSelectionChange }: DiffItemProps) {
     switch (diff.type) {
       case 'book':
         const book = diff.entity_data.import || diff.entity_data.database
-        return book?.title || diff.entity_id
+        return book && 'title' in book ? book.title : diff.entity_id
       case 'location':
         const loc = diff.entity_data.import || diff.entity_data.database
-        return loc ? `${loc.name} (${loc.type})` : diff.entity_id
+        return loc && 'name' in loc ? `${loc.name} (${loc.type})` : diff.entity_id
       case 'ownership':
         return `所有情報: ${diff.entity_id}`
       default:
         return diff.entity_id
     }
+  }
+
+  const renderDiffValues = () => {
+    if (diff.type === 'modification' && diff.entity_data.database && diff.entity_data.import) {
+      const dbData = diff.entity_data.database
+      const importData = diff.entity_data.import
+
+      if (diff.type === 'book' && 'title' in dbData && 'title' in importData) {
+        return (
+          <div className="diff-values">
+            <div className="diff-value-database">
+              <strong>データベース:</strong>
+              <div>タイトル: {dbData.title}</div>
+              <div>著者: {('author' in dbData ? dbData.author : null) || '(なし)'}</div>
+              <div>同人誌: {('is_doujin' in dbData ? dbData.is_doujin : false) ? 'はい' : 'いいえ'}</div>
+            </div>
+            <div className="diff-value-import">
+              <strong>インポートファイル:</strong>
+              <div>タイトル: {importData.title}</div>
+              <div>著者: {('author' in importData ? importData.author : null) || '(なし)'}</div>
+              <div>同人誌: {('is_doujin' in importData ? importData.is_doujin : false) ? 'はい' : 'いいえ'}</div>
+            </div>
+          </div>
+        )
+      }
+    }
+    return null
   }
 
   return (
@@ -306,6 +333,7 @@ function DiffItem({ diff, selection, onSelectionChange }: DiffItemProps) {
           変更されたフィールド: {diff.fields_changed.join(', ')}
         </div>
       )}
+      {renderDiffValues()}
     </div>
   )
 }
