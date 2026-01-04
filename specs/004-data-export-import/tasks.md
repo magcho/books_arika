@@ -109,12 +109,12 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation.**
 
-- [ ] T025 [P] [US3] Write unit test for ImportService.detectDiff (with differences case) in backend/tests/unit/import_service.test.ts
-- [ ] T026 [P] [US3] Write unit test for ImportService.applyImport (with differences case) in backend/tests/unit/import_service.test.ts
-- [ ] T027 [P] [US3] Write integration test for POST /api/import endpoint (with differences case) in backend/tests/integration/import.test.ts
-- [ ] T028 [P] [US3] Write integration test for POST /api/import/apply endpoint (with differences case) in backend/tests/integration/import.test.ts
-- [ ] T029 [P] [US3] Write unit test for ImportDialog component (with differences case) in frontend/tests/unit/ImportDialog.test.tsx
-- [ ] T030 [P] [US3] Write integration test for import flow with differences in frontend/tests/integration/export_import.test.tsx
+- [x] T025 [P] [US3] Write unit test for ImportService.detectDiff (with differences case) in backend/tests/unit/import_service.test.ts
+- [x] T026 [P] [US3] Write unit test for ImportService.applyImport (with differences case) in backend/tests/unit/import_service.test.ts
+- [x] T027 [P] [US3] Write integration test for POST /api/import endpoint (with differences case) in backend/tests/integration/import.test.ts
+- [x] T028 [P] [US3] Write integration test for POST /api/import/apply endpoint (with differences case) in backend/tests/integration/import.test.ts
+- [x] T029 [P] [US3] Write unit test for ImportDialog component (with differences case) in frontend/tests/unit/ImportDialog.test.tsx
+- [x] T030 [P] [US3] Write integration test for import flow with differences in frontend/tests/integration/export_import.test.tsx
 
 ### Implementation for User Story 3
 

@@ -351,7 +351,25 @@ export class ImportService {
       }
     }
 
-    // Process ownership deletions (in DB but not in import)
+    // Process deletions (entities in DB but not in import)
+    // 
+    // Deletion order is critical:
+    // 1. Get books BEFORE ownership deletions (so we can detect books that need deletion
+    //    even if their ownerships will be deleted first)
+    // 2. Delete ownerships first (to allow books to be deleted after their ownerships)
+    // 3. Delete books (checking for remaining ownerships to avoid foreign key constraint errors)
+    //
+    // This order ensures:
+    // - Books with ownerships selected for deletion can be deleted after their ownerships
+    // - Books with ownerships NOT selected for deletion are skipped (foreign key constraint)
+    // - Matches requirement FR-011: skip problematic data while continuing with valid data
+    const dbBooks = await this.getAllUserBooks(userId, bookService)
+    const importBooksIsbnSet = new Set(
+      importData.data.books.filter((b) => b.isbn).map((b) => b.isbn!)
+    )
+
+    // Step 1: Process ownership deletions (in DB but not in import)
+    // This is done before book deletions to allow books to be deleted after their ownerships
     const dbOwnerships = await this.getAllUserOwnerships(userId, ownershipService)
     for (const dbOwn of dbOwnerships) {
       const entityId = `${dbOwn.user_id}:${dbOwn.isbn}:${dbOwn.location_id}`
@@ -366,14 +384,9 @@ export class ImportService {
       }
     }
 
-    // Process deletions (entities in DB but not in import)
-    // Get all user books and check which ones are not in import file
-    const dbBooks = await this.getAllUserBooks(userId, bookService)
-    const importBooksIsbnSet = new Set(
-      importData.data.books.filter((b) => b.isbn).map((b) => b.isbn!)
-    )
-
-    // Process book deletions
+    // Step 2: Process book deletions
+    // Check for ownerships before attempting deletion to avoid foreign key constraint errors
+    // This check happens AFTER ownership deletions, so ownerships may have been deleted
     for (const dbBook of dbBooks) {
       if (!importBooksIsbnSet.has(dbBook.isbn)) {
         const entityId = dbBook.isbn
@@ -381,11 +394,19 @@ export class ImportService {
 
         if (priority === 'import') {
           // User wants to delete (import file doesn't have it)
+          // Check if book has any ownerships before attempting deletion
+          const ownerships = await ownershipService.findByISBN(entityId)
+          if (ownerships.length > 0) {
+            // Skip deletion - book has ownerships (foreign key constraint)
+            // This matches the requirement FR-011: skip problematic data while continuing with valid data
+            continue
+          }
+
           try {
             await bookService.delete(entityId)
             deleted++
           } catch (error) {
-            // Skip if ownerships exist (foreign key constraint)
+            // Fallback error handling (should not reach here if ownership check above works)
             if (
               error instanceof Error &&
               error.message.includes('所有情報が存在するため削除できません')
