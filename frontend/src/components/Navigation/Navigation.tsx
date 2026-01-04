@@ -48,6 +48,9 @@ export function Navigation() {
       <Link to="/locations" style={linkStyle('/locations')}>
         場所管理
       </Link>
+      <Link to="/settings" style={linkStyle('/settings')}>
+        設定
+      </Link>
     </nav>
   )
 }

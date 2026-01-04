@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { render } from '../helpers/render'
 import { ImportDialog } from '../../src/components/ImportDialog/ImportDialog'
 import { detectDiff, applyImport } from '../../src/services/import_api'
 import type { ImportDiffResult } from '../../src/types/export_import'

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { BookRegisterPage } from './pages/BookRegisterPage'
 import { BookListPage } from './pages/BookListPage'
 import { LocationManagePage } from './pages/LocationManagePage'
+import { SettingsPage } from './pages/SettingsPage'
 import { Navigation } from './components/Navigation/Navigation'
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 
@@ -15,6 +16,7 @@ function App() {
             <Route path="/" element={<BookListPage />} />
             <Route path="/register" element={<BookRegisterPage />} />
             <Route path="/locations" element={<LocationManagePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route
               path="*"
               element={
