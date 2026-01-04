@@ -219,7 +219,7 @@ describe('POST /api/import/apply', () => {
       location_id: loc.id,
     })
 
-    // Import data with new book
+    // Import data with new book (don't include existing ownership to avoid duplicate)
     const importData = createMockExportData({
       data: {
         books: [
@@ -228,7 +228,7 @@ describe('POST /api/import/apply', () => {
         ],
         locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          // Only include new ownership
           createMockExportOwnership({ user_id: userId, isbn: '9784111111111', location_id: 1 }),
         ],
       },
@@ -272,7 +272,7 @@ describe('POST /api/import/apply', () => {
       location_id: loc.id,
     })
 
-    // Import data with modified book
+    // Import data with modified book (ownership will be skipped if duplicate)
     const importData = createMockExportData({
       data: {
         books: [
@@ -284,6 +284,7 @@ describe('POST /api/import/apply', () => {
         ],
         locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
+          // This will be skipped as duplicate, but that's OK
           createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
         ],
       },
@@ -353,6 +354,10 @@ describe('POST /api/import/apply', () => {
 
     const result = await response.json()
     expect(result.stats.deleted).toBeGreaterThan(0)
+
+    // Verify book was deleted
+    const deletedBook = await bookService.findByISBN('9784987654321')
+    expect(deletedBook).toBeNull()
   })
 
   it('should return 400 when selections are missing', async () => {
