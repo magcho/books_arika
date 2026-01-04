@@ -398,16 +398,11 @@ describe('ImportService', () => {
         },
       })
 
-      // Select to delete book but NOT ownership (to test foreign key constraint)
-      // Ownership deletion is not selected (default is 'database'), so ownership will remain
-      // getAllUserBooks is called AFTER ownership deletions, so it will still see the ownership
-      // and return the book. But when trying to delete the book, it will fail because ownership exists.
+      // Test: Book deletion should be skipped when ownership exists (foreign key constraint)
+      // Setup: Book has ownership, but ownership deletion is not selected (default: 'database')
+      // Expected: Book deletion is skipped, book and ownership remain
       const selections = [{ entity_id: '9784123456789', priority: 'import' as const }]
 
-      // Should not throw error, but skip deletion due to foreign key constraint
-      // Note: getAllUserBooks is called AFTER ownership deletions, but ownership is not deleted
-      // (not selected), so the book will still be detected. But deletion will fail because
-      // ownership still exists.
       const result = await importService.applyImport(userId, importData, selections)
 
       // Book should still exist because deletion was skipped (has ownerships)

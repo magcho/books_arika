@@ -56,9 +56,9 @@ describe('POST /api/import', () => {
           createMockExportBook({ isbn: '9784123456789', title: 'Existing Book' }),
           createMockExportBook({ isbn: '9784111111111', title: 'New Book' }),
         ],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: loc.id }),
         ],
       },
     })
@@ -101,9 +101,9 @@ describe('POST /api/import', () => {
             author: 'Modified Author',
           }),
         ],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: loc.id }),
         ],
       },
     })
@@ -145,9 +145,9 @@ describe('POST /api/import', () => {
     const importData = createMockExportData({
       data: {
         books: [createMockExportBook({ isbn: '9784123456789', title: 'Keep Book' })],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: loc.id }),
         ],
       },
     })
@@ -226,10 +226,10 @@ describe('POST /api/import/apply', () => {
           createMockExportBook({ isbn: '9784123456789', title: 'Existing Book' }),
           createMockExportBook({ isbn: '9784111111111', title: 'New Book' }),
         ],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
           // Only include new ownership
-          createMockExportOwnership({ user_id: userId, isbn: '9784111111111', location_id: 1 }),
+          createMockExportOwnership({ user_id: userId, isbn: '9784111111111', location_id: loc.id }),
         ],
       },
     })
