@@ -70,6 +70,18 @@ export function createMockExportData(overrides?: Partial<ExportData>): ExportDat
 
 /**
  * Create export data with differences (for testing diff detection)
+ * 
+ * Returns a pair of ExportData objects:
+ * - `existing`: Simulates data currently in the database
+ * - `import`: Simulates data in the import file
+ * 
+ * The import data includes:
+ * - Additions: New book and location not in existing data
+ * - Modifications: Book with changed title and author
+ * - Deletions: Book and location removed from import file
+ * 
+ * This structure allows testing the diff detection logic that compares
+ * existing database state with imported data.
  */
 export function createMockExportDataWithDifferences(): {
   existing: ExportData

@@ -483,9 +483,10 @@ describe('ImportDialog', () => {
 
     await waitFor(() => {
       // Error message should be displayed
-      const errorText = screen.queryByText(/インポートエラー/i) || 
+      // ImportDialog shows "インポートの適用に失敗しました" or "インポートエラー: {message}"
+      const errorText = screen.queryByText(/インポートエラー:/i) ||
                         screen.queryByText(/インポートの適用に失敗しました/i) ||
-                        screen.queryByText(/エラー/i)
+                        screen.queryByText(/インポートエラー/i)
       expect(errorText).toBeInTheDocument()
     }, { timeout: 3000 })
   })
