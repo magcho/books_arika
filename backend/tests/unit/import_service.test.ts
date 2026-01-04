@@ -478,13 +478,11 @@ describe('ImportService', () => {
     })
 
     it('should skip ownerships with missing book references', async () => {
-      // Setup: Create location
+      // Test: applyImport should handle missing book reference gracefully
+      // Setup: Ownership references non-existent book in import
+      // Expected: applyImport throws error (book doesn't exist)
       const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
 
-      // Import data with ownership referencing non-existent book
-      // Note: detectDiff will still detect the ownership as an addition because
-      // it only checks if the ownership exists in DB, not if the book exists in import.
-      // The book check happens during applyImport. So we test that applyImport handles it.
       const importData = createMockExportData({
         data: {
           books: [], // No books in import
@@ -499,7 +497,6 @@ describe('ImportService', () => {
         },
       })
 
-      // Select to add ownership (but book doesn't exist)
       const selections = [
         {
           entity_id: `${userId}:9789999999999:${loc.id}`,
@@ -507,15 +504,15 @@ describe('ImportService', () => {
         },
       ]
 
-      // applyImport should handle missing book reference gracefully
-      // (ownership creation will fail because book doesn't exist)
       await expect(
         importService.applyImport(userId, importData, selections)
       ).rejects.toThrow()
     })
 
     it('should handle duplicate ownership creation gracefully', async () => {
-      // Setup: Create existing book and location with ownership
+      // Test: detectDiff should not detect existing ownership as addition
+      // Setup: Ownership already exists in DB
+      // Expected: Ownership is not in additions
       await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Test Book' }))
       const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
       await ownershipService.create({
@@ -524,7 +521,6 @@ describe('ImportService', () => {
         location_id: loc.id,
       })
 
-      // Import data with same ownership (duplicate)
       const importData = createMockExportData({
         data: {
           books: [createMockExportBook({ isbn: '9784123456789', title: 'Test Book' })],
@@ -539,10 +535,6 @@ describe('ImportService', () => {
         },
       })
 
-      // Note: The ownership already exists in DB, so it won't be in additions from detectDiff
-      // But if we try to create it again, it should be skipped gracefully
-      // Since the ownership already exists, we should not select it for import
-      // Instead, test that detectDiff correctly identifies it as not an addition
       const diffResult = await importService.detectDiff(userId, importData)
 
       // Ownership should not be in additions (already exists)
@@ -550,7 +542,9 @@ describe('ImportService', () => {
     })
 
     it('should handle location deletion with ownerships gracefully', async () => {
-      // Setup: Create book, location, and ownership
+      // Test: Location deletion should succeed even when ownerships exist
+      // Setup: Location has ownership (will be cascade deleted)
+      // Expected: Location is deleted successfully, ownerships are cascade deleted
       await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Test Book' }))
       const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
       await ownershipService.create({
@@ -559,16 +553,14 @@ describe('ImportService', () => {
         location_id: loc.id,
       })
 
-      // Import data without location (location deletion)
       const importData = createMockExportData({
         data: {
           books: [createMockExportBook({ isbn: '9784123456789', title: 'Test Book' })],
           locations: [], // Location not in import
-          ownerships: [], // Ownerships not in import (will be deleted)
+          ownerships: [], // Ownerships not in import (will be cascade deleted)
         },
       })
 
-      // Select to delete location
       const selections = [
         {
           entity_id: `自宅本棚:Physical`,
@@ -578,9 +570,12 @@ describe('ImportService', () => {
 
       const result = await importService.applyImport(userId, importData, selections)
 
-      // Location deletion should be attempted
-      // Note: Location deletion may fail if it has ownerships, but we handle it gracefully
-      expect(result.deleted).toBeGreaterThanOrEqual(0)
+      // Location deletion should succeed (ownerships are cascade deleted by DB)
+      expect(result.deleted).toBe(1)
+
+      // Verify location was deleted
+      const deletedLocation = await locationService.findById(loc.id)
+      expect(deletedLocation).toBeNull()
     })
   })
 })
