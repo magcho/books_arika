@@ -29,12 +29,13 @@ export async function applyImport(
   importData: ExportData,
   selections: ImportSelection[]
 ): Promise<{ message: string; stats: { added: number; modified: number; deleted: number } }> {
+  const request: ImportApplyRequest = {
+    import_data: importData,
+    selections,
+  }
   return post<{ message: string; stats: { added: number; modified: number; deleted: number } }>(
     `/import/apply?user_id=${userId}`,
-    {
-      import_data: importData,
-      selections,
-    }
+    request
   )
 }
 

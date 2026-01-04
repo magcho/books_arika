@@ -39,11 +39,18 @@ export function ImportDialog({ userId, onClose, onSuccess }: ImportDialogProps) 
 
       try {
         const text = await selectedFile.text()
-        const data = JSON.parse(text) as ExportData
-        setImportData(data)
+        const data = JSON.parse(text)
+
+        // Basic validation
+        if (!data || typeof data !== 'object' || !data.version || !data.data) {
+          throw new Error('無効なエクスポートファイル形式です')
+        }
+
+        const validatedData = data as ExportData
+        setImportData(validatedData)
 
         // Detect differences
-        const diff = await detectDiff(userId, data)
+        const diff = await detectDiff(userId, validatedData)
         setDiffResult(diff)
 
         // Initialize selections: default to 'import' for additions, 'database' for others
@@ -261,12 +268,14 @@ interface DiffItemProps {
 function DiffItem({ diff, selection, onSelectionChange }: DiffItemProps) {
   const getEntityLabel = () => {
     switch (diff.type) {
-      case 'book':
+      case 'book': {
         const book = diff.entity_data.import || diff.entity_data.database
         return book && 'title' in book ? book.title : diff.entity_id
-      case 'location':
+      }
+      case 'location': {
         const loc = diff.entity_data.import || diff.entity_data.database
         return loc && 'name' in loc ? `${loc.name} (${loc.type})` : diff.entity_id
+      }
       case 'ownership':
         return `所有情報: ${diff.entity_id}`
       default:
@@ -275,28 +284,26 @@ function DiffItem({ diff, selection, onSelectionChange }: DiffItemProps) {
   }
 
   const renderDiffValues = () => {
-    if (diff.type === 'modification' && diff.entity_data.database && diff.entity_data.import) {
+    if (diff.type === 'book' && diff.entity_data.database && diff.entity_data.import) {
       const dbData = diff.entity_data.database
       const importData = diff.entity_data.import
 
-      if (diff.type === 'book' && 'title' in dbData && 'title' in importData) {
-        return (
-          <div className="diff-values">
-            <div className="diff-value-database">
-              <strong>データベース:</strong>
-              <div>タイトル: {dbData.title}</div>
-              <div>著者: {('author' in dbData ? dbData.author : null) || '(なし)'}</div>
-              <div>同人誌: {('is_doujin' in dbData ? dbData.is_doujin : false) ? 'はい' : 'いいえ'}</div>
-            </div>
-            <div className="diff-value-import">
-              <strong>インポートファイル:</strong>
-              <div>タイトル: {importData.title}</div>
-              <div>著者: {('author' in importData ? importData.author : null) || '(なし)'}</div>
-              <div>同人誌: {('is_doujin' in importData ? importData.is_doujin : false) ? 'はい' : 'いいえ'}</div>
-            </div>
+      return (
+        <div className="diff-values">
+          <div className="diff-value-database">
+            <strong>データベース:</strong>
+            <div>タイトル: {dbData.title}</div>
+            <div>著者: {dbData.author || '(なし)'}</div>
+            <div>同人誌: {dbData.is_doujin ? 'はい' : 'いいえ'}</div>
           </div>
-        )
-      }
+          <div className="diff-value-import">
+            <strong>インポートファイル:</strong>
+            <div>タイトル: {importData.title}</div>
+            <div>著者: {importData.author || '(なし)'}</div>
+            <div>同人誌: {importData.is_doujin ? 'はい' : 'いいえ'}</div>
+          </div>
+        </div>
+      )
     }
     return null
   }

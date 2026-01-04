@@ -48,15 +48,35 @@ export interface ImportDiffResult {
   deletions: ImportDifference[]
 }
 
-export interface ImportDifference {
-  type: 'book' | 'location' | 'ownership'
-  entity_id: string
-  entity_data: {
-    database?: ExportBook | ExportLocation | ExportOwnership | Book | Location | Ownership
-    import?: ExportBook | ExportLocation | ExportOwnership
-  }
-  fields_changed?: string[]
-}
+// Use discriminated union for type safety
+export type ImportDifference =
+  | {
+      type: 'book'
+      entity_id: string
+      entity_data: {
+        database?: Book
+        import?: ExportBook
+      }
+      fields_changed?: string[]
+    }
+  | {
+      type: 'location'
+      entity_id: string
+      entity_data: {
+        database?: Location
+        import?: ExportLocation
+      }
+      fields_changed?: string[]
+    }
+  | {
+      type: 'ownership'
+      entity_id: string
+      entity_data: {
+        database?: Ownership
+        import?: ExportOwnership
+      }
+      fields_changed?: string[]
+    }
 
 export interface ImportSelection {
   entity_id: string
@@ -64,6 +84,7 @@ export interface ImportSelection {
 }
 
 export interface ImportApplyRequest {
+  import_data: ExportData
   selections: ImportSelection[]
 }
 

@@ -29,10 +29,10 @@ imports.post('/', async (c) => {
     ])
   }
 
+  const importService = new ImportService(db)
   let importData
   try {
     const body = await c.req.json()
-    const importService = new ImportService(db)
     importData = importService.validateImportFile(body)
   } catch (error) {
     if (error instanceof Error) {
@@ -49,7 +49,6 @@ imports.post('/', async (c) => {
   }
 
   try {
-    const importService = new ImportService(db)
     const diffResult = await importService.detectDiff(userId!, importData)
 
     return c.json(diffResult)
@@ -82,7 +81,7 @@ imports.post('/apply', async (c) => {
     ])
   }
 
-  const body = await c.req.json<ImportApplyRequest & { import_data: unknown }>()
+  const body = await c.req.json<ImportApplyRequest>()
 
   // Validate request body
   const errors = validateRequired(body, ['selections', 'import_data'])
@@ -99,10 +98,10 @@ imports.post('/apply', async (c) => {
     ])
   }
 
+  const importService = new ImportService(db)
   let importData
   try {
-    const importService = new ImportService(db)
-    importData = importService.validateImportFile(body.import_data)
+    importData = importService.validateImportFile(body.import_data as unknown)
   } catch (error) {
     if (error instanceof Error) {
       throw new HTTPException(400, {
@@ -118,7 +117,6 @@ imports.post('/apply', async (c) => {
   }
 
   try {
-    const importService = new ImportService(db)
     const stats = await importService.applyImport(userId!, importData, body.selections)
 
     return c.json({

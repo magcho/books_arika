@@ -158,15 +158,9 @@ export class ImportService {
       }
     }
 
-    // Find location modifications
-    for (const [key, importLoc] of importLocationsMap) {
-      const dbLoc = dbLocationsMap.get(key)
-      if (dbLoc) {
-        // Locations are matched by name+type, so if they match, they're the same
-        // But we check if any other fields changed (created_at, updated_at are metadata)
-        // For now, we consider locations with same name+type as identical
-      }
-    }
+    // Note: Location modifications are not tracked because locations are matched by
+    // name+type composite key. If they match, they're considered identical.
+    // Metadata fields (created_at, updated_at) are not part of the comparison.
 
     // Find location deletions
     for (const [key, dbLoc] of dbLocationsMap) {
@@ -269,6 +263,9 @@ export class ImportService {
     })
 
     // Create location ID mapping (import location_id -> DB location_id)
+    // Note: Locations are auto-created if they don't exist, regardless of user selection,
+    // because they are required for ownership references. If a location is not selected for
+    // import, it will be created but not used (ownerships referencing it won't be created).
     const locationIdMapping = new Map<number, number>()
     for (const importLoc of importData.data.locations) {
       const key = `${importLoc.name}:${importLoc.type}`
@@ -435,6 +432,7 @@ export class ImportService {
 
   /**
    * Helper: Get all books for a user (through ownerships)
+   * Optimized to use a single query with IN clause instead of N+1 queries
    */
   private async getAllUserBooks(userId: string, bookService: BookService): Promise<Book[]> {
     const ownerships = await this.db
@@ -442,15 +440,19 @@ export class ImportService {
       .bind(userId)
       .all<{ isbn: string }>()
 
-    const books: Book[] = []
-    for (const own of ownerships.results || []) {
-      const book = await bookService.findByISBN(own.isbn)
-      if (book) {
-        books.push(book)
-      }
-    }
+    const isbns = (ownerships.results || []).map((own) => own.isbn)
+    if (isbns.length === 0) return []
 
-    return books
+    const placeholders = isbns.map(() => '?').join(', ')
+    const result = await this.db
+      .prepare(`SELECT * FROM books WHERE isbn IN (${placeholders})`)
+      .bind(...isbns)
+      .all<Book>()
+
+    return (result.results || []).map((book) => ({
+      ...book,
+      is_doujin: Boolean(book.is_doujin),
+    }))
   }
 
   /**
