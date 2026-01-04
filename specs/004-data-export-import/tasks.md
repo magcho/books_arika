@@ -137,12 +137,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T041 [P] Add error messages in Japanese for all error cases in backend/src/services/export_service.ts and backend/src/services/import_service.ts
+- [x] T041 [P] Add error messages in Japanese for all error cases in backend/src/services/export_service.ts and backend/src/services/import_service.ts
 - [ ] T042 [P] Add loading states and error handling in ExportButton component in frontend/src/components/ExportButton/ExportButton.tsx
-- [ ] T043 [P] Add loading states and error handling in ImportDialog component in frontend/src/components/ImportDialog/ImportDialog.tsx
+- [x] T043 [P] Add loading states and error handling in ImportDialog component in frontend/src/components/ImportDialog/ImportDialog.tsx
 - [ ] T044 [P] Add performance tests for large datasets (1000 books) in backend/tests/integration/export.test.ts and backend/tests/integration/import.test.ts
-- [ ] T045 [P] Add edge case tests (empty data, invalid JSON, version mismatch) in backend/tests/integration/import.test.ts
-- [ ] T046 [P] Add edge case tests (missing references, constraint violations) in backend/tests/unit/import_service.test.ts
+- [x] T045 [P] Add edge case tests (empty data, invalid JSON, version mismatch) in backend/tests/integration/import.test.ts
+- [x] T046 [P] Add edge case tests (missing references, constraint violations) in backend/tests/unit/import_service.test.ts
 - [ ] T047 [P] Update API documentation in specs/004-data-export-import/contracts/api.yaml if needed
 - [ ] T048 Run quickstart.md validation to ensure all examples work
 

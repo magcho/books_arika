@@ -450,6 +450,133 @@ describe('ImportService', () => {
       expect(result.modified).toBeGreaterThan(0)
       // Deletions may be 0 if book has ownerships
     })
+
+    it('should skip ownerships with missing location references', async () => {
+      // Setup: Create existing book
+      await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Test Book' }))
+
+      // Import data with ownership referencing non-existent location
+      const importData = createMockExportData({
+        data: {
+          books: [createMockExportBook({ isbn: '9784123456789', title: 'Test Book' })],
+          locations: [], // No locations in import
+          ownerships: [
+            createMockExportOwnership({
+              user_id: userId,
+              isbn: '9784123456789',
+              location_id: 999, // Non-existent location ID
+            }),
+          ],
+        },
+      })
+
+      const diffResult = await importService.detectDiff(userId, importData)
+
+      // Ownership with missing location should not be in additions
+      // (because location matching fails)
+      expect(diffResult.additions.filter((d) => d.type === 'ownership')).toHaveLength(0)
+    })
+
+    it('should skip ownerships with missing book references', async () => {
+      // Test: applyImport should handle missing book reference gracefully
+      // Setup: Ownership references non-existent book in import
+      // Expected: applyImport throws error (book doesn't exist)
+      const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
+
+      const importData = createMockExportData({
+        data: {
+          books: [], // No books in import
+          locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
+          ownerships: [
+            createMockExportOwnership({
+              user_id: userId,
+              isbn: '9789999999999', // Non-existent ISBN
+              location_id: loc.id,
+            }),
+          ],
+        },
+      })
+
+      const selections = [
+        {
+          entity_id: `${userId}:9789999999999:${loc.id}`,
+          priority: 'import' as const,
+        },
+      ]
+
+      await expect(
+        importService.applyImport(userId, importData, selections)
+      ).rejects.toThrow()
+    })
+
+    it('should handle duplicate ownership creation gracefully', async () => {
+      // Test: detectDiff should not detect existing ownership as addition
+      // Setup: Ownership already exists in DB
+      // Expected: Ownership is not in additions
+      await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Test Book' }))
+      const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
+      await ownershipService.create({
+        user_id: userId,
+        isbn: '9784123456789',
+        location_id: loc.id,
+      })
+
+      const importData = createMockExportData({
+        data: {
+          books: [createMockExportBook({ isbn: '9784123456789', title: 'Test Book' })],
+          locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
+          ownerships: [
+            createMockExportOwnership({
+              user_id: userId,
+              isbn: '9784123456789',
+              location_id: loc.id,
+            }),
+          ],
+        },
+      })
+
+      const diffResult = await importService.detectDiff(userId, importData)
+
+      // Ownership should not be in additions (already exists)
+      expect(diffResult.additions.filter((d) => d.type === 'ownership')).toHaveLength(0)
+    })
+
+    it('should handle location deletion with ownerships gracefully', async () => {
+      // Test: Location deletion should succeed even when ownerships exist
+      // Setup: Location has ownership (will be cascade deleted)
+      // Expected: Location is deleted successfully, ownerships are cascade deleted
+      await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Test Book' }))
+      const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
+      await ownershipService.create({
+        user_id: userId,
+        isbn: '9784123456789',
+        location_id: loc.id,
+      })
+
+      const importData = createMockExportData({
+        data: {
+          books: [createMockExportBook({ isbn: '9784123456789', title: 'Test Book' })],
+          locations: [], // Location not in import
+          ownerships: [], // Ownerships not in import (will be cascade deleted)
+        },
+      })
+
+      const selections = [
+        {
+          entity_id: `自宅本棚:Physical`,
+          priority: 'import' as const,
+        },
+      ]
+
+      const result = await importService.applyImport(userId, importData, selections)
+
+      // Location deletion should succeed (ownerships are cascade deleted by DB)
+      expect(result.deleted).toBe(1)
+
+      // Verify location was deleted
+      const deletedLocation = await locationService.findById(loc.id)
+      expect(deletedLocation).toBeNull()
+    })
   })
 })
 

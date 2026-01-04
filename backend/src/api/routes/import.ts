@@ -13,6 +13,41 @@ import type { ImportApplyRequest } from '../../types/export_import'
 const imports = new Hono<{ Bindings: Env }>()
 
 /**
+ * Handle JSON parse errors and convert to HTTPException
+ * Returns true if error was handled (JSON parse error), false otherwise
+ */
+function handleJsonParseError(error: unknown): boolean {
+  if (error instanceof SyntaxError || (error instanceof Error && error.message.includes('JSON'))) {
+    throw new HTTPException(400, {
+      message: JSON.stringify({
+        error: {
+          message: 'リクエストボディのJSON形式が正しくありません',
+          code: 'INVALID_JSON',
+        },
+      }),
+    })
+  }
+  return false
+}
+
+/**
+ * Handle import file validation errors and convert to HTTPException
+ */
+function handleImportFileValidationError(error: unknown): never {
+  if (error instanceof Error) {
+    throw new HTTPException(400, {
+      message: JSON.stringify({
+        error: {
+          message: error.message,
+          code: 'INVALID_IMPORT_FILE',
+        },
+      }),
+    })
+  }
+  throw error
+}
+
+/**
  * POST /api/import
  * Detect differences between imported data and existing database
  */
@@ -35,17 +70,12 @@ imports.post('/', async (c) => {
     const body = await c.req.json()
     importData = importService.validateImportFile(body)
   } catch (error) {
-    if (error instanceof Error) {
-      throw new HTTPException(400, {
-        message: JSON.stringify({
-          error: {
-            message: error.message,
-            code: 'INVALID_IMPORT_FILE',
-          },
-        }),
-      })
+    // Handle JSON parse errors first
+    const isJsonError = handleJsonParseError(error)
+    if (!isJsonError) {
+      // If not a JSON parse error, handle import file validation errors
+      handleImportFileValidationError(error)
     }
-    throw error
   }
 
   try {
@@ -81,7 +111,16 @@ imports.post('/apply', async (c) => {
     ])
   }
 
-  const body = await c.req.json<ImportApplyRequest>()
+  let body: ImportApplyRequest
+  try {
+    body = await c.req.json<ImportApplyRequest>()
+  } catch (error) {
+    // Handle JSON parse errors
+    const isJsonError = handleJsonParseError(error)
+    if (!isJsonError) {
+      throw error
+    }
+  }
 
   // Validate request body
   const errors = validateRequired(body, ['selections', 'import_data'])
@@ -103,17 +142,8 @@ imports.post('/apply', async (c) => {
   try {
     importData = importService.validateImportFile(body.import_data as unknown)
   } catch (error) {
-    if (error instanceof Error) {
-      throw new HTTPException(400, {
-        message: JSON.stringify({
-          error: {
-            message: error.message,
-            code: 'INVALID_IMPORT_FILE',
-          },
-        }),
-      })
-    }
-    throw error
+    // Handle import file validation errors
+    handleImportFileValidationError(error)
   }
 
   try {
