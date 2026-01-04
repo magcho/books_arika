@@ -44,29 +44,15 @@
 docs/
 └── prs/
     ├── 001-phase1-phase2-setup/
-    │   ├── description.md              # PR概要・説明
-    │   └── reviews/
-    │       ├── review-001.md           # 包括的レビュー（最新版）
-    │       └── inline-comments.md      # インラインレビューコメント
+    │   └── description.md              # PR概要・説明
     ├── 002-user-story-1-book-registration/
-    │   ├── description.md
-    │   └── reviews/
-    │       └── review-001.md
+    │   └── description.md
     ├── 003-user-story-2-location-management/
-    │   ├── description.md
-    │   └── reviews/
-    │       ├── review-001.md           # 初回レビュー
-    │       └── review-002.md           # 再レビュー（存在する場合）
+    │   └── description.md
     ├── 004-user-story-3-book-search/
-    │   ├── description.md
-    │   └── reviews/
-    │       ├── review-001.md           # 初回レビュー
-    │       ├── review-002.md           # 再レビュー
-    │       └── inline-comments.md      # インラインレビューコメント
+    │   └── description.md
     └── 005-phase6-polish/
-        ├── description.md
-        └── reviews/
-            └── review-001.md
+        └── description.md
 ```
 
 ### 2. ファイル命名規則
@@ -74,12 +60,7 @@ docs/
 #### 説明ファイル
 - `description.md`: PRの概要、実装内容、関連タスク
 
-#### レビューファイル
-- `review-001.md`, `review-002.md`, ...: 時系列順の包括的レビュー
-  - 初回レビュー: `review-001.md`
-  - 再レビュー: `review-002.md`
-  - 最新のレビューが常に最後の番号
-- `inline-comments.md`: コード行ごとのインラインレビューコメント（必要に応じて）
+**注意**: レビューファイルは保存しません。レビューコメントはGitHubのPRに直接記載します。
 
 ### 3. ファイル内容の構造
 
@@ -153,16 +134,14 @@ docs/
 1. **新しいPRの作成時**
    - `docs/prs/[NNN-feature-name]/` ディレクトリを作成
    - `description.md` を作成
-   - `reviews/` ディレクトリを作成
+   - `reviews/` ディレクトリは作成しない（レビューコメントはPRに直接記載）
 
 2. **レビューの追加時**
-   - 既存のレビューファイルを確認
-   - 最新のレビュー番号を確認（例：`review-001.md` が最新なら `review-002.md` を作成）
-   - インラインレビューコメントは `inline-comments.md` に追加または更新
+   - GitHubのPRに直接コメントを記載
+   - markdownファイルとして保存しない
 
 3. **PR完了時**
-   - 最終的なレビューを `review-XXX.md` として保存
-   - 承認ステータスを明確に記載
+   - PRのコメント履歴がGitHubに自動保存されるため、別途ファイルに保存する必要はない
 
 ### 6. メリット
 
@@ -200,18 +179,7 @@ docs/
 2. **002-user-story-1-book-registration/**
    - `description.md` ← `PR_US1_DESCRIPTION.md`
 
-3. **003-user-story-2-location-management/**
-   - `reviews/review-001.md` ← `PR_17_REVIEW.md`
-   - `reviews/inline-comments.md` ← `PR_17_INLINE_REVIEW.md`
-
-4. **004-user-story-3-book-search/**
-   - `reviews/review-001.md` ← `PR_19_REVIEW.md`
-   - `reviews/review-002.md` ← `PR_19_RE_REVIEW.md`
-   - `reviews/inline-comments.md` ← `PR_19_INLINE_REVIEW.md`
-   - `reviews/github-inline-comments.md` ← `PR_19_GITHUB_INLINE_COMMENTS.md`
-
-5. **005-phase6-polish/**
-   - `reviews/review-001.md` ← `PR_20_REVIEW.md`
+**注意**: レビューファイルは移行していません。レビューコメントはGitHubのPRに保存されているため、markdownファイルとして保存する必要はありません。
 
 ### 削除完了
 
