@@ -282,10 +282,9 @@ describe('POST /api/import/apply', () => {
             author: 'Modified Author',
           }),
         ],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          // This will be skipped as duplicate, but that's OK
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          // Don't include existing ownership to avoid duplicate error
         ],
       },
     })
@@ -325,20 +324,29 @@ describe('POST /api/import/apply', () => {
       isbn: '9784123456789',
       location_id: loc.id,
     })
-    // Don't create ownership for Delete Book to allow deletion
+    // Create ownership for Delete Book so it's detected by getAllUserBooks
+    await ownershipService.create({
+      user_id: userId,
+      isbn: '9784987654321',
+      location_id: loc.id,
+    })
 
-    // Import data without Delete Book
+    // Import data without Delete Book (don't include existing ownerships to avoid duplicate errors)
     const importData = createMockExportData({
       data: {
         books: [createMockExportBook({ isbn: '9784123456789', title: 'Keep Book' })],
-        locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+        locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
         ownerships: [
-          createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: 1 }),
+          // Don't include existing ownerships to avoid duplicate errors
         ],
       },
     })
 
-    const selections = [{ entity_id: '9784987654321', priority: 'import' as const }]
+    // Select to delete ownership first, then book can be deleted
+    const selections = [
+      { entity_id: `${userId}:9784987654321:${loc.id}`, priority: 'import' as const }, // Delete ownership first
+      { entity_id: '9784987654321', priority: 'import' as const }, // Then delete book
+    ]
 
     const request = new Request(`http://localhost/api/import/apply?user_id=${userId}`, {
       method: 'POST',

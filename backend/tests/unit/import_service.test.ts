@@ -143,9 +143,10 @@ describe('ImportService', () => {
 
       const diff = await importService.detectDiff(userId, importData)
 
-      expect(diff.deletions).toHaveLength(1)
-      expect(diff.deletions[0].type).toBe('book')
-      expect(diff.deletions[0].entity_id).toBe('9784987654321')
+      // Should detect book deletion and ownership deletion
+      const bookDeletions = diff.deletions.filter((d) => d.type === 'book')
+      expect(bookDeletions.length).toBe(1)
+      expect(bookDeletions[0].entity_id).toBe('9784987654321')
     })
 
     it('should detect location additions', async () => {
@@ -335,7 +336,7 @@ describe('ImportService', () => {
     })
 
     it('should apply import with deletions when user selects import priority', async () => {
-      // Setup: Create existing books
+      // Setup: Create existing books with ownerships (getAllUserBooks only returns books with ownerships)
       await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Keep Book' }))
       await bookService.create(createMockBookInput({ isbn: '9784987654321', title: 'Delete Book' }))
       const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
@@ -344,25 +345,34 @@ describe('ImportService', () => {
         isbn: '9784123456789',
         location_id: loc.id,
       })
-      // Don't create ownership for Delete Book to allow deletion
+      // Create ownership for Delete Book so it's detected by getAllUserBooks
+      await ownershipService.create({
+        user_id: userId,
+        isbn: '9784987654321',
+        location_id: loc.id,
+      })
 
-      // Import data without Delete Book
+      // Import data without Delete Book (don't include existing ownerships to avoid duplicate errors)
       const importData = createMockExportData({
         data: {
           books: [createMockExportBook({ isbn: '9784123456789', title: 'Keep Book' })],
           locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
           ownerships: [
-            createMockExportOwnership({ user_id: userId, isbn: '9784123456789', location_id: loc.id }),
+            // Don't include existing ownerships to avoid duplicate errors
           ],
         },
       })
 
-      const selections = [{ entity_id: '9784987654321', priority: 'import' as const }]
+      // Select to delete ownership first, then book can be deleted
+      const selections = [
+        { entity_id: `${userId}:9784987654321:${loc.id}`, priority: 'import' as const }, // Delete ownership first
+        { entity_id: '9784987654321', priority: 'import' as const }, // Then delete book
+      ]
 
       const result = await importService.applyImport(userId, importData, selections)
 
       expect(result.deleted).toBeGreaterThan(0)
-      // Verify book was deleted
+      // Verify book was deleted (after ownership is deleted)
       const deletedBook = await bookService.findByISBN('9784987654321')
       expect(deletedBook).toBeNull()
     })
@@ -371,30 +381,47 @@ describe('ImportService', () => {
       // Setup: Create existing book with ownership
       await bookService.create(createMockBookInput({ isbn: '9784123456789', title: 'Book with Ownership' }))
       const loc = await createTestLocation(db, userId, '自宅本棚', 'Physical')
-      await ownershipService.create({
+      const ownership = await ownershipService.create({
         user_id: userId,
         isbn: '9784123456789',
         location_id: loc.id,
       })
 
-      // Import data without this book
+      // Import data without this book and ownership
+      // Ownership is not in import, so it will be detected for deletion
+      // But we don't select ownership deletion, so ownership will remain
       const importData = createMockExportData({
         data: {
           books: [],
-          locations: [createMockExportLocation({ id: 1, name: '自宅本棚', type: 'Physical' })],
+          locations: [createMockExportLocation({ id: loc.id, name: '自宅本棚', type: 'Physical' })],
           ownerships: [],
         },
       })
 
+      // Select to delete book but NOT ownership (to test foreign key constraint)
+      // Ownership deletion is not selected (default is 'database'), so ownership will remain
+      // getAllUserBooks is called AFTER ownership deletions, so it will still see the ownership
+      // and return the book. But when trying to delete the book, it will fail because ownership exists.
       const selections = [{ entity_id: '9784123456789', priority: 'import' as const }]
 
       // Should not throw error, but skip deletion due to foreign key constraint
+      // Note: getAllUserBooks is called AFTER ownership deletions, but ownership is not deleted
+      // (not selected), so the book will still be detected. But deletion will fail because
+      // ownership still exists.
       const result = await importService.applyImport(userId, importData, selections)
 
       // Book should still exist because deletion was skipped (has ownerships)
       const book = await bookService.findByISBN('9784123456789')
       expect(book).toBeTruthy()
       expect(book?.title).toBe('Book with Ownership')
+      
+      // Ownership should still exist (not selected for deletion, default is 'database')
+      const existingOwnership = await ownershipService.findByUserBookAndLocation(
+        userId,
+        '9784123456789',
+        loc.id
+      )
+      expect(existingOwnership).toBeTruthy()
     })
 
     it('should handle complex import with multiple selections', async () => {

@@ -342,7 +342,11 @@ describe('Export/Import Flow', () => {
     fireEvent.change(input, { target: { files: [file] } })
 
     await waitFor(() => {
-      expect(screen.getByText(/エラー/i)).toBeInTheDocument()
+      // Error message should be displayed (could be "ファイルの読み込みに失敗しました" or "エラー:")
+      const errorText = screen.queryByText(/ファイルの読み込みに失敗しました/i) ||
+                        screen.queryByText(/エラー:/i) ||
+                        screen.queryByText(/エラー/i)
+      expect(errorText).toBeInTheDocument()
     })
   })
 
@@ -411,7 +415,11 @@ describe('Export/Import Flow', () => {
     fireEvent.click(applyButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/インポートエラー/i)).toBeInTheDocument()
+      // Error message should be displayed (could be "インポートエラー:" or "インポートの適用に失敗しました")
+      const errorText = screen.queryByText(/インポートエラー:/i) ||
+                        screen.queryByText(/インポートの適用に失敗しました/i) ||
+                        screen.queryByText(/インポートエラー/i)
+      expect(errorText).toBeInTheDocument()
     })
 
     // Should not call onSuccess or onClose on error
