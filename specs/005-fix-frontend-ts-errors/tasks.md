@@ -24,7 +24,7 @@
 
 **Purpose**: 現在のエラー状態を確認し、修正前の状態を記録
 
-- [x] T001 現在のビルドエラーを確認するため、`frontend`ディレクトリで`npm run build`を実行し、エラー出力を記録
+- [ ] T001 現在のビルドエラーを確認するため、`frontend`ディレクトリで`npm run build`を実行し、エラー出力を記録
 
 ---
 
@@ -36,15 +36,15 @@
 
 ### エラー修正実装
 
-- [x] T002 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の23行目から`const [file, setFile] = useState<File | null>(null)`を削除
-- [x] T003 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の36行目から`setFile(selectedFile)`を削除
-- [x] T004 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の76行目から`setFile(null)`を削除
-- [x] T005 [US1] エラー2を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の`getEntityLabel`関数内（281-282行目付近）から`default`ケースを削除
+- [ ] T002 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の23行目から`const [file, setFile] = useState<File | null>(null)`を削除
+- [ ] T003 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の36行目から`setFile(selectedFile)`を削除
+- [ ] T004 [US1] エラー1を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の76行目から`setFile(null)`を削除
+- [ ] T005 [US1] エラー2を修正: `frontend/src/components/ImportDialog/ImportDialog.tsx`の`getEntityLabel`関数内（281-282行目付近）から`default`ケースを削除
 
 ### ビルド確認
 
-- [x] T006 [US1] 修正後のビルドを確認: `frontend`ディレクトリで`npm run build`を実行し、TypeScriptの型チェックエラーが0件で完了することを確認
-- [x] T007 [US1] ビルド成果物の確認: `frontend/dist`ディレクトリにビルド成果物が正常に生成されていることを確認
+- [ ] T006 [US1] 修正後のビルドを確認: `frontend`ディレクトリで`npm run build`を実行し、TypeScriptの型チェックエラーが0件で完了することを確認
+- [ ] T007 [US1] ビルド成果物の確認: `frontend/dist`ディレクトリにビルド成果物が正常に生成されていることを確認
 
 **Checkpoint**: この時点で、User Story 1は完全に機能し、独立してテスト可能であるべき
 
@@ -56,8 +56,8 @@
 
 ### 既存テストの実行
 
-- [x] T008 [P] [US1] 既存のテストを実行: `frontend`ディレクトリで`npm test`を実行し、すべてのテストが通過することを確認
-- [x] T009 [P] [US1] ImportDialogコンポーネントの手動テスト: 開発サーバー（`npm run dev`）を起動し、ImportDialogコンポーネントが正常にレンダリングされ、ファイル選択機能が正常に動作することを確認
+- [ ] T008 [P] [US1] 既存のテストを実行: `frontend`ディレクトリで`npm test`を実行し、すべてのテストが通過することを確認
+- [ ] T009 [P] [US1] ImportDialogコンポーネントの動作確認（手動）: 開発サーバー（`npm run dev`）を起動し、ImportDialogコンポーネントが正常にレンダリングされ、ファイル選択機能が正常に動作することを確認。※本タスクはバグ修正であり新機能追加ではないため、既存の自動テスト（T008）と手動確認の組み合わせで品質を担保する
 
 ---
 
@@ -65,8 +65,8 @@
 
 **Purpose**: 最終的な品質確認とドキュメント更新
 
-- [x] T010 コードレビュー準備: 変更内容を確認し、コードレビューに備える
-- [x] T011 変更内容のドキュメント化: 修正したエラーとその修正方法を記録（必要に応じて）
+- [ ] T010 コードレビュー準備: 変更内容を確認し、コードレビューに備える
+- [ ] T011 変更内容のドキュメント化: PRを作成する場合、修正したエラーの内容と修正方法をPR説明に記録する
 
 ---
 
@@ -133,6 +133,7 @@ Task T009: "ImportDialogコンポーネントの手動テスト: 開発サーバ
 ## Notes
 
 - この機能は既存コードの修正のみで、新規機能の追加はない
+- **重要**: T002-T005で参照される行番号は調査時点のもの。実装時は現在のファイル状態を確認し、該当箇所を特定すること
 - すべてのタスクは単一ファイル（`ImportDialog.tsx`）に対する修正
 - エラー修正タスク（T002-T005）は同じファイルを修正するため、順次実行が必要
 - テストタスク（T008-T009）は並列実行可能
